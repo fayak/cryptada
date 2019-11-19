@@ -11,6 +11,8 @@ all:
 	@$(CC) $(CFLAGS) bn.c ./tests/randomized.c  -o ./test_random
 	@#$(CC) $(CFLAGS) bn.c ./tests/rsa.c         -o ./test_rsa
 
+bindings: bn.h
+	gcc -c -fdump-ada-spec -C bn.h
 
 test:
 	@echo
