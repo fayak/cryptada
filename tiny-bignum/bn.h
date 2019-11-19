@@ -26,7 +26,7 @@ There may well be room for performance-optimizations and improvements.
 
 /* This macro defines the word size in bytes of the array that constitues the big-number data structure. */
 #ifndef WORD_SIZE
-  #define WORD_SIZE 4
+  #define WORD_SIZE 1
 #endif
 
 /* Size of big-numbers in bytes */
