@@ -7,15 +7,15 @@ with Interfaces.C.Strings;
 
 package bn_h is
 
-   WORD_SIZE : constant := 1;  --  bn.h:29
-   --  unsupported macro: BN_ARRAY_SIZE (128 / WORD_SIZE)
-   --  unsupported macro: DTYPE uint8_t
-   --  unsupported macro: DTYPE_MSB ((DTYPE_TMP)(0x80))
+   WORD_SIZE : constant := 2;  --  bn.h:29
+   --  unsupported macro: BN_ARRAY_SIZE (256 / WORD_SIZE)
+   --  unsupported macro: DTYPE uint16_t
    --  unsupported macro: DTYPE_TMP uint32_t
+   --  unsupported macro: DTYPE_MSB ((DTYPE_TMP)(0x8000))
 
-   SPRINTF_FORMAT_STR : aliased constant String := "%.02x" & ASCII.NUL;  --  bn.h:48
-   SSCANF_FORMAT_STR : aliased constant String := "%2hhx" & ASCII.NUL;  --  bn.h:49
-   --  unsupported macro: MAX_VAL ((DTYPE_TMP)0xFF)
+   SPRINTF_FORMAT_STR : aliased constant String := "%.04x" & ASCII.NUL;  --  bn.h:56
+   SSCANF_FORMAT_STR : aliased constant String := "%4hx" & ASCII.NUL;  --  bn.h:57
+   --  unsupported macro: MAX_VAL ((DTYPE_TMP)0xFFFF)
    --  unsupported macro: require(p,msg) assert(p && #msg)
 
   --Big number library - arithmetic on multiple-precision unsigned integers.
@@ -41,7 +41,7 @@ package bn_h is
   -- Max value of integer type  
   -- Custom assert macro - easy to disable  
   -- Data-holding structure: array of DTYPEs  
-   type anon887_c_array_array is array (0 .. 127) of aliased bits_stdint_uintn_h.uint8_t;
+   type anon887_c_array_array is array (0 .. 127) of aliased bits_stdint_uintn_h.uint16_t;
    type bn is record
       c_array : aliased anon887_c_array_array;  -- bn.h:79
    end record

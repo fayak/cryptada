@@ -42,6 +42,8 @@ with STM32.User_Button;     use STM32;
 with BMP_Fonts;
 with LCD_Std_Out;
 
+with Interfaces.C.Strings;
+with bn_h;                  use bn_h;
 
 procedure Main
 is
@@ -50,11 +52,23 @@ is
       X, Y: Integer;
    end record;
 
+   type Big_Num_Access is access bn;
+   Big_Num_A : Big_Num_Access := new bn;
+   Big_Num_B : Big_Num_Access := new bn;
+   Big_Num_C : Big_Num_Access := new bn;
+   Res : Interfaces.C.Strings.chars_ptr;
+
    BG : Bitmap_Color := (Alpha => 255, others => 0);
    Ball_Pos   : Point := (120, 160);
    Ball_Speed : Ball_Speed_Type := (2, 3);
    Board_Size : Point := (240, 320);
 begin
+
+   Res := Interfaces.C.Strings.New_String("01234567890123456789");
+   bignum_from_int(Big_Num_A, 42);
+   bignum_from_int(Big_Num_B, 1000);
+   bignum_mul(Big_Num_A, Big_Num_B, Big_Num_C);
+   bignum_to_string(Big_Num_C, Res, 20);
 
    --  Initialize LCD
    Display.Initialize;
@@ -107,8 +121,6 @@ begin
       end if;
 
       Ball_Pos := (Ball_Pos.X + Ball_Speed.X, Ball_Pos.Y + Ball_Speed.Y);
-
-
 
       --  Update screen
       Display.Update_Layer (1, Copy_Back => True);
