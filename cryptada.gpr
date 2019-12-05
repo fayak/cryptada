@@ -1,19 +1,29 @@
 with "boards/stm32f429_discovery/stm32f429_discovery_full.gpr";
 
-project cryptada extends "examples/shared/common/common.gpr" is
+project Cryptada extends "examples/shared/common/common.gpr" is
 
-    for Languages use ("Ada", "C");
-
-   for Runtime ("Ada") use STM32F429_Discovery_Full'Runtime("Ada");
+   for Languages use ("Ada", "C");
+   for Runtime ("ada") use Stm32F429_Discovery_Full'Runtime ("Ada");
    for Object_Dir use "obj";
    for Create_Missing_Dirs use "True";
-
    for Main use ("main.adb");
    for Source_Dirs use ("src", "tiny-bignum");
 
    package Linker is
-      for Default_Switches ("ada") use
-        ("-Wl,--gc-sections", "-Wl,--print-memory-usage");
+      for Default_Switches ("ada") use ("-Wl,--gc-sections", "-Wl,--print-memory-usage", "-g");
+      for Switches ("c") use ("-g");
    end Linker;
 
-end cryptada;
+   for Target use "arm-eabi";
+
+   package Builder is
+      for Switches ("ada") use ("-g");
+   end Builder;
+
+   package Compiler is
+      for Switches ("ada") use ("-g");
+      for Switches ("c") use ("-g");
+   end Compiler;
+
+end Cryptada;
+

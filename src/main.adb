@@ -40,10 +40,15 @@ pragma Warnings (Off, "referenced");
 with HAL.Touch_Panel;       use HAL.Touch_Panel;
 with STM32.User_Button;     use STM32;
 with BMP_Fonts;
-with LCD_Std_Out;
 
 with Interfaces.C.Strings;
 with bn_h;                  use bn_h;
+with LCD_Std_Out;
+
+with bignum; use bignum;
+
+with miller_rabin;
+use miller_rabin;
 
 procedure Main
 is
@@ -52,11 +57,17 @@ is
       X, Y: Integer;
    end record;
 
-   type Big_Num_Access is access bn;
+
    Big_Num_A : Big_Num_Access := new bn;
    Big_Num_B : Big_Num_Access := new bn;
    Big_Num_C : Big_Num_Access := new bn;
+   Tmp : Big_Num_Access := new bn;
+
    Res : Interfaces.C.Strings.chars_ptr;
+   Test : Boolean;
+
+   Pute : String(1..STR_DEST_SIZE) := (others => '0');
+
 
    BG : Bitmap_Color := (Alpha => 255, others => 0);
    Ball_Pos   : Point := (120, 160);
@@ -64,11 +75,21 @@ is
    Board_Size : Point := (240, 320);
 begin
 
-   Res := Interfaces.C.Strings.New_String("01234567890123456789");
+   Res := Interfaces.C.Strings.New_String(Pute);
+   --Test := Interfaces.C.Strings.New_String(Pute2);
+   bignum_init(Big_Num_A);
+   bignum_init(Big_Num_B);
+   bignum_init(Big_Num_C);
+   bignum_init(Tmp);
+
    bignum_from_int(Big_Num_A, 42);
-   bignum_from_int(Big_Num_B, 1000);
-   bignum_mul(Big_Num_A, Big_Num_B, Big_Num_C);
-   bignum_to_string(Big_Num_C, Res, 20);
+   bignum_from_int(Big_Num_B, 4);
+   --bignum_mul(Big_Num_A, Big_Num_B, Big_Num_C);
+   --bignum_mul(Big_Num_C, Big_Num_B, Big_Num_A);
+   --bignum_mul(Big_Num_A, Big_Num_B, Big_Num_C);
+   --bignum_to_string(Big_Num_C, Res, STR_DEST_SIZE);
+
+
 
    --  Initialize LCD
    Display.Initialize;
@@ -80,7 +101,7 @@ begin
    --  Initialize button
    User_Button.Initialize;
 
-   LCD_Std_Out.Set_Font (BMP_Fonts.Font8x8);
+   LCD_Std_Out.Set_Font (BMP_Fonts.Font12x12);
    LCD_Std_Out.Current_Background_Color := BG;
 
    --  Clear LCD (set background)
@@ -89,41 +110,20 @@ begin
 
    LCD_Std_Out.Clear_Screen;
    Display.Update_Layer (1, Copy_Back => True);
+   LCD_Std_Out.Clear_Screen;
 
+
+   LCD_Std_Out.Put_Line("pute ?");
+   --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
+   LCD_Std_Out.Put_Line("Pute");
+   Test := Miller_Rabin_Witness (Big_Num_A, Big_Num_B);
+   if Test then
+      LCD_Std_Out.Put_Line("Prime");
+   else
+      LCD_Std_Out.Put_Line("Composite");
+   end if;
    loop
-      if User_Button.Has_Been_Pressed then
-         BG := HAL.Bitmap.Dark_Orange;
-      end if;
-
-      Display.Hidden_Buffer (1).Set_Source (BG);
-      Display.Hidden_Buffer (1).Fill;
-
-      Display.Hidden_Buffer (1).Set_Source (HAL.Bitmap.Blue);
-      Display.Hidden_Buffer (1).Fill_Circle (Ball_Pos, 10);
-
-
-      declare
-         State : constant TP_State := Touch_Panel.Get_All_Touch_Points;
-      begin
-         case State'Length is
-            when 1 =>
-               Ball_Pos := (State (State'First).X, State (State'First).Y);
-            when others => null;
-         end case;
-      end;
-
-      if Ball_Pos.X + Ball_Speed.X >= Board_Size.X or Ball_Pos.X + Ball_Speed.X <= 0 then
-         Ball_Speed.X := -Ball_Speed.X;
-      end if;
-
-      if Ball_Pos.Y + Ball_Speed.Y >= Board_Size.Y or Ball_Pos.Y + Ball_Speed.Y <= 0 then
-        Ball_Speed.Y := -Ball_Speed.Y;
-      end if;
-
-      Ball_Pos := (Ball_Pos.X + Ball_Speed.X, Ball_Pos.Y + Ball_Speed.Y);
-
-      --  Update screen
-      Display.Update_Layer (1, Copy_Back => True);
-
+         Display.Update_Layer (1, Copy_Back => True);
    end loop;
+
 end Main;

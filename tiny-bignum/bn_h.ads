@@ -8,13 +8,16 @@ with Interfaces.C.Strings;
 package bn_h is
 
    WORD_SIZE : constant := 2;  --  bn.h:29
-   --  unsupported macro: BN_ARRAY_SIZE (256 / WORD_SIZE)
+
+   BN_ARRAY_SIZE : constant := (256 / 2);  --  bn.h:34
+
+   STR_DEST_SIZE : constant := 512;  --  bn.h:36
    --  unsupported macro: DTYPE uint16_t
    --  unsupported macro: DTYPE_TMP uint32_t
    --  unsupported macro: DTYPE_MSB ((DTYPE_TMP)(0x8000))
 
-   SPRINTF_FORMAT_STR : aliased constant String := "%.04x" & ASCII.NUL;  --  bn.h:56
-   SSCANF_FORMAT_STR : aliased constant String := "%4hx" & ASCII.NUL;  --  bn.h:57
+   SPRINTF_FORMAT_STR : aliased constant String := "%.04x" & ASCII.NUL;  --  bn.h:58
+   SSCANF_FORMAT_STR : aliased constant String := "%4hx" & ASCII.NUL;  --  bn.h:59
    --  unsupported macro: MAX_VAL ((DTYPE_TMP)0xFFFF)
    --  unsupported macro: require(p,msg) assert(p && #msg)
 
@@ -32,6 +35,8 @@ package bn_h is
 
   -- This macro defines the word size in bytes of the array that constitues the big-number data structure.  
   -- Size of big-numbers in bytes  
+  -- #define BN_ARRAY_SIZE    (256 / WORD_SIZE)
+  -- #define STR_DEST_SIZE    BN_ARRAY_SIZE * 4
   -- Here comes the compile-time specialization for how large the underlying array size should be.  
   -- The choices are 1, 2 and 4 bytes in size with uint32, uint64 for WORD_SIZE==4, as temporary.  
   -- Data type of array in structure  
@@ -43,23 +48,23 @@ package bn_h is
   -- Data-holding structure: array of DTYPEs  
    type anon887_c_array_array is array (0 .. 127) of aliased bits_stdint_uintn_h.uint16_t;
    type bn is record
-      c_array : aliased anon887_c_array_array;  -- bn.h:79
+      c_array : aliased anon887_c_array_array;  -- bn.h:81
    end record
-   with Convention => C_Pass_By_Copy;  -- bn.h:77
+   with Convention => C_Pass_By_Copy;  -- bn.h:79
 
   -- Tokens returned by bignum_cmp() for value comparison  
   -- Initialization functions:  
-   procedure bignum_init (n : access bn)  -- bn.h:90
+   procedure bignum_init (n : access bn)  -- bn.h:92
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_init";
 
-   procedure bignum_from_int (n : access bn; i : bits_stdint_uintn_h.uint32_t)  -- bn.h:91
+   procedure bignum_from_int (n : access bn; i : bits_stdint_uintn_h.uint32_t)  -- bn.h:93
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_from_int";
 
-   function bignum_to_int (n : access bn) return int  -- bn.h:92
+   function bignum_to_int (n : access bn) return int  -- bn.h:94
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_to_int";
@@ -67,7 +72,7 @@ package bn_h is
    procedure bignum_from_string
      (n : access bn;
       str : Interfaces.C.Strings.chars_ptr;
-      nbytes : int)  -- bn.h:93
+      nbytes : int)  -- bn.h:95
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_from_string";
@@ -75,7 +80,7 @@ package bn_h is
    procedure bignum_to_string
      (n : access bn;
       str : Interfaces.C.Strings.chars_ptr;
-      maxsize : int)  -- bn.h:94
+      maxsize : int)  -- bn.h:96
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_to_string";
@@ -85,7 +90,7 @@ package bn_h is
    procedure bignum_add
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:97
+      c : access bn)  -- bn.h:99
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_add";
@@ -94,7 +99,7 @@ package bn_h is
    procedure bignum_sub
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:98
+      c : access bn)  -- bn.h:100
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_sub";
@@ -103,7 +108,7 @@ package bn_h is
    procedure bignum_mul
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:99
+      c : access bn)  -- bn.h:101
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_mul";
@@ -112,7 +117,7 @@ package bn_h is
    procedure bignum_div
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:100
+      c : access bn)  -- bn.h:102
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_div";
@@ -121,7 +126,7 @@ package bn_h is
    procedure bignum_mod
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:101
+      c : access bn)  -- bn.h:103
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_mod";
@@ -131,7 +136,7 @@ package bn_h is
      (a : access bn;
       b : access bn;
       c : access bn;
-      d : access bn)  -- bn.h:102
+      d : access bn)  -- bn.h:104
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_divmod";
@@ -141,7 +146,7 @@ package bn_h is
    procedure bignum_and
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:105
+      c : access bn)  -- bn.h:107
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_and";
@@ -150,7 +155,7 @@ package bn_h is
    procedure bignum_or
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:106
+      c : access bn)  -- bn.h:108
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_or";
@@ -159,7 +164,7 @@ package bn_h is
    procedure bignum_xor
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:107
+      c : access bn)  -- bn.h:109
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_xor";
@@ -168,7 +173,7 @@ package bn_h is
    procedure bignum_lshift
      (a : access bn;
       b : access bn;
-      nbits : int)  -- bn.h:108
+      nbits : int)  -- bn.h:110
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_lshift";
@@ -177,32 +182,32 @@ package bn_h is
    procedure bignum_rshift
      (a : access bn;
       b : access bn;
-      nbits : int)  -- bn.h:109
+      nbits : int)  -- bn.h:111
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_rshift";
 
   -- Special operators and comparison  
   -- Compare: returns LARGER, EQUAL or SMALLER  
-   function bignum_cmp (a : access bn; b : access bn) return int  -- bn.h:112
+   function bignum_cmp (a : access bn; b : access bn) return int  -- bn.h:114
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_cmp";
 
   -- For comparison with zero  
-   function bignum_is_zero (n : access bn) return int  -- bn.h:113
+   function bignum_is_zero (n : access bn) return int  -- bn.h:115
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_is_zero";
 
   -- Increment: add one to n  
-   procedure bignum_inc (n : access bn)  -- bn.h:114
+   procedure bignum_inc (n : access bn)  -- bn.h:116
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_inc";
 
   -- Decrement: subtract one from n  
-   procedure bignum_dec (n : access bn)  -- bn.h:115
+   procedure bignum_dec (n : access bn)  -- bn.h:117
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_dec";
@@ -211,19 +216,19 @@ package bn_h is
    procedure bignum_pow
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:116
+      c : access bn)  -- bn.h:118
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_pow";
 
   -- Integer square root -- e.g. isqrt(5) => 2 
-   procedure bignum_isqrt (a : access bn; b : access bn)  -- bn.h:117
+   procedure bignum_isqrt (a : access bn; b : access bn)  -- bn.h:119
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_isqrt";
 
   -- Copy src into dst -- dst := src  
-   procedure bignum_assign (dst : access bn; src : access bn)  -- bn.h:118
+   procedure bignum_assign (dst : access bn; src : access bn)  -- bn.h:120
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_assign";
