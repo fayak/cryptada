@@ -90,7 +90,7 @@ begin
    LCD_Std_Out.Put_Line("Miller Rabinou time");
    --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
    bignum_init(Big_Num_A);
-   for n in Natural range 1373527..1373640 loop
+   for n in Natural range 9080181..9080190 loop
       bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));
       LCD_Std_Out.Put(n'Image);
       LCD_Std_Out.Put(":=");

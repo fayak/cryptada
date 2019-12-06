@@ -87,6 +87,9 @@ package body miller_rabin is
       if bignum_cmp(N, Miller_1373653) < 0 then
          return not (Miller_Rabin_Witness(N, Two, S, D, N_Minus) and Miller_Rabin_Witness(N, Three, S, D, N_Minus));
       end if;
+      if bignum_cmp(N, Miller_9080191) < 0 then
+         return not (Miller_Rabin_Witness(N, Miller_31, S, D, N_Minus) and Miller_Rabin_Witness(N, Miller_73, S, D, N_Minus));
+      end if;
       return False;
    end Miller_Rabin_p;
 begin
@@ -100,9 +103,14 @@ begin
    bignum_from_int(Five, 5);
    bignum_init(Seven);
    bignum_from_int(Seven, 7);
+   bignum_init(Miller_31);
+   bignum_from_int(Miller_31, 31);
+   bignum_init(Miller_73);
+   bignum_from_int(Miller_73, 73);
    bignum_init(Miller_2047);
    bignum_from_int(Miller_2047, 2047);
    bignum_init(Miller_1373653);
    bignum_from_int(Miller_1373653, 1373653);
-
+   bignum_init(Miller_9080191);
+   bignum_from_int(Miller_9080191, 9080191);
 end miller_rabin;
