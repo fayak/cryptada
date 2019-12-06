@@ -1,7 +1,20 @@
 with bn_h;                  use bn_h;
 
-package bignum is
+package Bignum is
 
-   type Big_Num_Access is access bn;
+   type Big_Num_Access is access all bn;
 
-end bignum;
+   function Two : Big_Num_Access;
+   pragma Inline;
+   function One : Big_Num_Access;
+   pragma Inline;
+   function Three : Big_Num_Access;
+   pragma Inline;
+   function Five : Big_Num_Access;
+   pragma Inline;
+   function Seven : Big_Num_Access;
+   pragma Inline;
+   function Miller_2047 : Big_Num_Access;
+   pragma Inline;
+
+end Bignum;

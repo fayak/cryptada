@@ -81,8 +81,6 @@ struct bn
   DTYPE array[BN_ARRAY_SIZE];
 };
 
-
-
 /* Tokens returned by bignum_cmp() for value comparison */
 enum { SMALLER = -1, EQUAL = 0, LARGER = 1 };
 
@@ -120,7 +118,12 @@ void bignum_pow(struct bn* a, struct bn* b, struct bn* c); /* Calculate a^b -- e
 void bignum_isqrt(struct bn* a, struct bn* b);             /* Integer square root -- e.g. isqrt(5) => 2*/
 void bignum_assign(struct bn* dst, struct bn* src);        /* Copy src into dst -- dst := src */
 
+/* Constants */
+struct bn *bignum_one(void); // 1
+struct bn *bignum_two(void); // 2
+struct bn *bignum_three(void); // 3
+struct bn *bignum_five(void); // 5
+struct bn *bignum_seven(void); // 7
+struct bn *bignum_2047(void); // 2047
 
 #endif /* #ifndef __BIGNUM_H__ */
-
-

@@ -1,5 +1,4 @@
 with bn_h;                  use bn_h;
-with Interfaces.C.Strings;
 
 with bignum; use bignum;
 

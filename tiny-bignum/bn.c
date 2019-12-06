@@ -689,4 +689,80 @@ static void _rshift_one_bit(struct bn* a)
   a->array[BN_ARRAY_SIZE - 1] >>= 1;
 }
 
+struct bn *bignum_one(void)
+{
+  static struct bn tmp;
+  static int init = 0;
+  if (!init)
+  {
+      bignum_init(&tmp);
+      bignum_from_int(&tmp, 1);
+      init = 1;
+  }
+  return &tmp;
+}
 
+struct bn *bignum_two(void)
+{
+  static struct bn tmp;
+  static int init = 0;
+  if (!init)
+  {
+      bignum_init(&tmp);
+      bignum_from_int(&tmp, 2);
+      init = 1;
+  }
+  return &tmp;
+}
+
+struct bn *bignum_three(void)
+{
+  static struct bn tmp;
+  static int init = 0;
+  if (!init)
+  {
+      bignum_init(&tmp);
+      bignum_from_int(&tmp, 3);
+      init = 1;
+  }
+  return &tmp;
+}
+
+struct bn *bignum_five(void)
+{
+  static struct bn tmp;
+  static int init = 0;
+  if (!init)
+  {
+      bignum_init(&tmp);
+      bignum_from_int(&tmp, 5);
+      init = 1;
+  }
+  return &tmp;
+}
+
+struct bn *bignum_seven(void)
+{
+  static struct bn tmp;
+  static int init = 0;
+  if (!init)
+  {
+      bignum_init(&tmp);
+      bignum_from_int(&tmp, 7);
+      init = 1;
+  }
+  return &tmp;
+}
+
+struct bn *bignum_2047(void)
+{
+  static struct bn tmp;
+  static int init = 0;
+  if (!init)
+  {
+      bignum_init(&tmp);
+      bignum_from_int(&tmp, 2047);
+      init = 1;
+  }
+  return &tmp;
+}
