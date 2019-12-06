@@ -31,9 +31,9 @@ There may well be room for performance-optimizations and improvements.
 
 /* Size of big-numbers in bytes */
 // #define BN_ARRAY_SIZE    (256 / WORD_SIZE)
-#define BN_ARRAY_SIZE    (32 / 2)
+#define BN_ARRAY_SIZE    (64 / 2)
 // #define STR_DEST_SIZE    BN_ARRAY_SIZE * 4
-#define STR_DEST_SIZE    64
+#define STR_DEST_SIZE    256
 
 /* Here comes the compile-time specialization for how large the underlying array size should be. */
 /* The choices are 1, 2 and 4 bytes in size with uint32, uint64 for WORD_SIZE==4, as temporary. */

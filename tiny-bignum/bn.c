@@ -689,6 +689,7 @@ static void _rshift_one_bit(struct bn* a)
   a->array[BN_ARRAY_SIZE - 1] >>= 1;
 }
 
+
 struct bn *bignum_one(void)
 {
   static struct bn tmp;

@@ -9,9 +9,9 @@ package bn_h is
 
    WORD_SIZE : constant := 2;  --  bn.h:29
 
-   BN_ARRAY_SIZE : constant := (32 / 2);  --  bn.h:34
+   BN_ARRAY_SIZE : constant := (64 / 2);  --  bn.h:34
 
-   STR_DEST_SIZE : constant := 64;  --  bn.h:36
+   STR_DEST_SIZE : constant := 256;  --  bn.h:36
    --  unsupported macro: DTYPE uint16_t
    --  unsupported macro: DTYPE_TMP uint32_t
    --  unsupported macro: DTYPE_MSB ((DTYPE_TMP)(0x8000))
@@ -46,9 +46,9 @@ package bn_h is
   -- Max value of integer type  
   -- Custom assert macro - easy to disable  
   -- Data-holding structure: array of DTYPEs  
-   type anon855_c_array_array is array (0 .. 15) of aliased bits_stdint_uintn_h.uint16_t;
+   type anon887_c_array_array is array (0 .. 31) of aliased bits_stdint_uintn_h.uint16_t;
    type bn is record
-      c_array : aliased anon855_c_array_array;  -- bn.h:81
+      c_array : aliased anon887_c_array_array;  -- bn.h:81
    end record
    with Convention => C_Pass_By_Copy;  -- bn.h:79
 

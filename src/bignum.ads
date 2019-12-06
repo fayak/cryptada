@@ -4,17 +4,11 @@ package Bignum is
 
    type Big_Num_Access is access all bn;
 
-   function Two : Big_Num_Access;
-   pragma Inline;
-   function One : Big_Num_Access;
-   pragma Inline;
-   function Three : Big_Num_Access;
-   pragma Inline;
-   function Five : Big_Num_Access;
-   pragma Inline;
-   function Seven : Big_Num_Access;
-   pragma Inline;
-   function Miller_2047 : Big_Num_Access;
-   pragma Inline;
+   function Two return Big_Num_Access;
+   function One return Big_Num_Access;
+   function Three return Big_Num_Access;
+   function Five return Big_Num_Access;
+   function Seven return Big_Num_Access;
+   function Miller_2047 return Big_Num_Access;
 
 end Bignum;

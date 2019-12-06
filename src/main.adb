@@ -53,43 +53,17 @@ use miller_rabin;
 procedure Main
 is
 
-   type Ball_Speed_Type is record
-      X, Y: Integer;
-   end record;
-
 
    Big_Num_A : Big_Num_Access := new bn;
-   Big_Num_B : Big_Num_Access := new bn;
-   Big_Num_C : Big_Num_Access := new bn;
-   Tmp : Big_Num_Access := new bn;
 
-   Res : Interfaces.C.Strings.chars_ptr;
    Test : Boolean;
-
-   Pute : String(1..STR_DEST_SIZE) := (others => '0');
 
 
    BG : Bitmap_Color := (Alpha => 255, others => 0);
-   Ball_Pos   : Point := (120, 160);
-   Ball_Speed : Ball_Speed_Type := (2, 3);
    Board_Size : Point := (240, 320);
 begin
 
-   Res := Interfaces.C.Strings.New_String(Pute);
-   --Test := Interfaces.C.Strings.New_String(Pute2);
    bignum_init(Big_Num_A);
-   bignum_init(Big_Num_B);
-   bignum_init(Big_Num_C);
-   bignum_init(Tmp);
-
-   bignum_from_int(Big_Num_A, 43);
-   bignum_from_int(Big_Num_B, 4);
-   --bignum_mul(Big_Num_A, Big_Num_B, Big_Num_C);
-   --bignum_mul(Big_Num_C, Big_Num_B, Big_Num_A);
-   --bignum_mul(Big_Num_A, Big_Num_B, Big_Num_C);
-   --bignum_to_string(Big_Num_C, Res, STR_DEST_SIZE);
-
-
 
    --  Initialize LCD
    Display.Initialize;
@@ -113,15 +87,20 @@ begin
    LCD_Std_Out.Clear_Screen;
 
 
-   LCD_Std_Out.Put_Line("pute ?");
+   LCD_Std_Out.Put_Line("Miller Rabinou time");
    --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
-   LCD_Std_Out.Put_Line("Pute");
-   Test := Miller_Rabin_Witness (Big_Num_A, Big_Num_B);
-   if Test then
-      LCD_Std_Out.Put_Line("Prime");
-   else
-      LCD_Std_Out.Put_Line("Composite");
-   end if;
+   bignum_init(Big_Num_A);
+   for n in Natural range 1373527..1373640 loop
+      bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));
+      LCD_Std_Out.Put(n'Image);
+      LCD_Std_Out.Put(":=");
+      Test := Miller_Rabin_p(Big_Num_A);
+      if Test then
+         LCD_Std_Out.Put_Line("Prime");
+      else
+         LCD_Std_Out.Put_Line("Composite");
+      end if;
+   end loop;
    loop
          Display.Update_Layer (1, Copy_Back => True);
    end loop;
