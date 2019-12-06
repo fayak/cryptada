@@ -90,6 +90,16 @@ package body miller_rabin is
       if bignum_cmp(N, Miller_9080191) < 0 then
          return not (Miller_Rabin_Witness(N, Miller_31, S, D, N_Minus) and Miller_Rabin_Witness(N, Miller_73, S, D, N_Minus));
       end if;
+      if bignum_cmp(N, Miller_341550071728321) < 0 then
+         return not (Miller_Rabin_Witness(N, Two, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Three, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Five, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Seven, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Miller_11, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Miller_13, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Miller_17, S, D, N_Minus)
+                    );
+      end if;
       return False;
    end Miller_Rabin_p;
 begin
@@ -103,6 +113,12 @@ begin
    bignum_from_int(Five, 5);
    bignum_init(Seven);
    bignum_from_int(Seven, 7);
+   bignum_init(Miller_11);
+   bignum_from_int(Miller_11, 11);
+   bignum_init(Miller_13);
+   bignum_from_int(Miller_13, 13);
+   bignum_init(Miller_17);
+   bignum_from_int(Miller_17, 17);
    bignum_init(Miller_31);
    bignum_from_int(Miller_31, 31);
    bignum_init(Miller_73);
@@ -113,4 +129,7 @@ begin
    bignum_from_int(Miller_1373653, 1373653);
    bignum_init(Miller_9080191);
    bignum_from_int(Miller_9080191, 9080191);
+   
+   bignum_init(Miller_341550071728321);
+   bignum_from_string(Miller_341550071728321, Interfaces.C.Strings.New_String("341550071728321"), 15);
 end miller_rabin;
