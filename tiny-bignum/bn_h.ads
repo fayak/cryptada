@@ -9,9 +9,9 @@ package bn_h is
 
    WORD_SIZE : constant := 2;  --  bn.h:29
 
-   BN_ARRAY_SIZE : constant := (256 / 2);  --  bn.h:34
+   BN_ARRAY_SIZE : constant := (32 / 2);  --  bn.h:34
 
-   STR_DEST_SIZE : constant := 512;  --  bn.h:36
+   STR_DEST_SIZE : constant := 64;  --  bn.h:36
    --  unsupported macro: DTYPE uint16_t
    --  unsupported macro: DTYPE_TMP uint32_t
    --  unsupported macro: DTYPE_MSB ((DTYPE_TMP)(0x8000))
@@ -46,7 +46,7 @@ package bn_h is
   -- Max value of integer type  
   -- Custom assert macro - easy to disable  
   -- Data-holding structure: array of DTYPEs  
-   type anon887_c_array_array is array (0 .. 127) of aliased bits_stdint_uintn_h.uint16_t;
+   type anon887_c_array_array is array (0 .. 15) of aliased bits_stdint_uintn_h.uint16_t;
    type bn is record
       c_array : aliased anon887_c_array_array;  -- bn.h:81
    end record
@@ -141,12 +141,21 @@ package bn_h is
         Convention => C, 
         External_Name => "bignum_divmod";
 
+   procedure bignum_powmod
+     (a : access bn;
+      b : access bn;
+      n : access bn;
+      res : access bn)  -- bn.h:105
+   with Import => True, 
+        Convention => C, 
+        External_Name => "bignum_powmod";
+
   -- Bitwise operations:  
   -- c = a & b  
    procedure bignum_and
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:107
+      c : access bn)  -- bn.h:108
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_and";
@@ -155,7 +164,7 @@ package bn_h is
    procedure bignum_or
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:108
+      c : access bn)  -- bn.h:109
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_or";
@@ -164,7 +173,7 @@ package bn_h is
    procedure bignum_xor
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:109
+      c : access bn)  -- bn.h:110
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_xor";
@@ -173,7 +182,7 @@ package bn_h is
    procedure bignum_lshift
      (a : access bn;
       b : access bn;
-      nbits : int)  -- bn.h:110
+      nbits : int)  -- bn.h:111
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_lshift";
@@ -182,32 +191,32 @@ package bn_h is
    procedure bignum_rshift
      (a : access bn;
       b : access bn;
-      nbits : int)  -- bn.h:111
+      nbits : int)  -- bn.h:112
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_rshift";
 
   -- Special operators and comparison  
   -- Compare: returns LARGER, EQUAL or SMALLER  
-   function bignum_cmp (a : access bn; b : access bn) return int  -- bn.h:114
+   function bignum_cmp (a : access bn; b : access bn) return int  -- bn.h:115
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_cmp";
 
   -- For comparison with zero  
-   function bignum_is_zero (n : access bn) return int  -- bn.h:115
+   function bignum_is_zero (n : access bn) return int  -- bn.h:116
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_is_zero";
 
   -- Increment: add one to n  
-   procedure bignum_inc (n : access bn)  -- bn.h:116
+   procedure bignum_inc (n : access bn)  -- bn.h:117
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_inc";
 
   -- Decrement: subtract one from n  
-   procedure bignum_dec (n : access bn)  -- bn.h:117
+   procedure bignum_dec (n : access bn)  -- bn.h:118
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_dec";
@@ -216,19 +225,19 @@ package bn_h is
    procedure bignum_pow
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:118
+      c : access bn)  -- bn.h:119
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_pow";
 
   -- Integer square root -- e.g. isqrt(5) => 2 
-   procedure bignum_isqrt (a : access bn; b : access bn)  -- bn.h:119
+   procedure bignum_isqrt (a : access bn; b : access bn)  -- bn.h:120
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_isqrt";
 
   -- Copy src into dst -- dst := src  
-   procedure bignum_assign (dst : access bn; src : access bn)  -- bn.h:120
+   procedure bignum_assign (dst : access bn; src : access bn)  -- bn.h:121
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_assign";

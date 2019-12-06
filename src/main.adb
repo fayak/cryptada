@@ -82,7 +82,7 @@ begin
    bignum_init(Big_Num_C);
    bignum_init(Tmp);
 
-   bignum_from_int(Big_Num_A, 42);
+   bignum_from_int(Big_Num_A, 43);
    bignum_from_int(Big_Num_B, 4);
    --bignum_mul(Big_Num_A, Big_Num_B, Big_Num_C);
    --bignum_mul(Big_Num_C, Big_Num_B, Big_Num_A);

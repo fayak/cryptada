@@ -39,17 +39,10 @@ package body miller_rabin is
       end loop;
    
       bignum_to_string(S, Buffer, STR_DEST_SIZE);
-      LCD_Std_Out.Put("S := ");
       LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Buffer));
       bignum_to_string(D, Buffer, STR_DEST_SIZE);
-      LCD_Std_Out.Put("D := ");
       LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Buffer));
-      LCD_Std_Out.Put_Line("suce ! 1");
       bignum_powmod(A, D, N, Tmp2);
-      --LCD_Std_Out.Put_Line("suce ! 2");
-
-      --bignum_mod(Tmp, N, Tmp2);
-      LCD_Std_Out.Put_Line("suce ! pute !!!");
 
       if bignum_cmp(Tmp2, One) = 0 then
          return False;
@@ -58,20 +51,15 @@ package body miller_rabin is
       bignum_sub(N, One, N_Minus);
       
       bignum_from_int(I, 0);
-                              LCD_Std_Out.Put_Line("suce ! pute !");
 
       while bignum_cmp(I, S) <= 0 loop
          bignum_pow(Two, I, Tmp);
          bignum_mul(Tmp, D, Tmp2);
-                        LCD_Std_Out.Put_Line("suce ! pute ");
-
          bignum_powmod(A, Tmp2, N, Tmp);
-         --bignum_mod(Tmp, N, Tmp2);
          
          if bignum_cmp(Tmp, N_Minus) = 0 then
             return False;
          end if;
-               LCD_Std_Out.Put_Line("suce, pute ");
 
          bignum_inc(I);
       end loop;

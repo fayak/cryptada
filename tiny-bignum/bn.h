@@ -31,9 +31,9 @@ There may well be room for performance-optimizations and improvements.
 
 /* Size of big-numbers in bytes */
 // #define BN_ARRAY_SIZE    (256 / WORD_SIZE)
-#define BN_ARRAY_SIZE    (256 / 2)
+#define BN_ARRAY_SIZE    (32 / 2)
 // #define STR_DEST_SIZE    BN_ARRAY_SIZE * 4
-#define STR_DEST_SIZE    512
+#define STR_DEST_SIZE    64
 
 /* Here comes the compile-time specialization for how large the underlying array size should be. */
 /* The choices are 1, 2 and 4 bytes in size with uint32, uint64 for WORD_SIZE==4, as temporary. */
@@ -102,6 +102,7 @@ void bignum_mul(struct bn* a, struct bn* b, struct bn* c); /* c = a * b */
 void bignum_div(struct bn* a, struct bn* b, struct bn* c); /* c = a / b */
 void bignum_mod(struct bn* a, struct bn* b, struct bn* c); /* c = a % b */
 void bignum_divmod(struct bn* a, struct bn* b, struct bn* c, struct bn* d); /* c = a/b, d = a%b */
+void bignum_powmod(struct bn* a, struct bn* b, struct bn* n, struct bn* res);
 
 /* Bitwise operations: */
 void bignum_and(struct bn* a, struct bn* b, struct bn* c); /* c = a & b */
