@@ -3,7 +3,7 @@ with Ada.Numerics.Float_Random;
 
 package Prng is
 
-   procedure Random (dst: Big_Num_Access; nb_Bit: in out Integer);
+   procedure Random (dst: Big_Num_Access; nb_Bit: Integer);
    
 private
    gen: Ada.Numerics.Float_Random.Generator;

@@ -49,6 +49,7 @@ with bignum; use bignum;
 
 with miller_rabin;
 use miller_rabin;
+with Prng;
 
 procedure Main
 is
@@ -61,7 +62,13 @@ is
 
    BG : Bitmap_Color := (Alpha => 255, others => 0);
    Board_Size : Point := (240, 320);
+
+   Nb_Bit : Integer := 32;
+
+   String_Base : String(1..STR_DEST_SIZE) := (others => '0');
+   Buffer : Interfaces.C.Strings.chars_ptr;
 begin
+   Buffer := Interfaces.C.Strings.New_String(String_Base);
 
    bignum_init(Big_Num_A);
 
@@ -90,9 +97,13 @@ begin
    LCD_Std_Out.Put_Line("Miller Rabinou time");
    --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
    bignum_init(Big_Num_A);
-   for n in Natural range 9080181..9080190 loop
-      bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));
-      LCD_Std_Out.Put(n'Image);
+   for n in Natural range 0..15 loop
+      --bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));
+      Prng.Random(Big_Num_A, Nb_Bit);
+      Nb_Bit := 32;
+      --LCD_Std_Out.Put(n'Image);
+      bignum_to_string(Big_Num_A, Buffer, STR_DEST_SIZE);
+      LCD_Std_Out.Put(Interfaces.C.Strings.Value(Buffer));
       LCD_Std_Out.Put(":=");
       Test := Miller_Rabin_p(Big_Num_A);
       if Test then
