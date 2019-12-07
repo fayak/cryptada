@@ -1,10 +1,10 @@
 with Interfaces.C.Strings;
 
 package body Bignum is
-   function test return Boolean is
-      begin
-      return True;
-      end test;
+   procedure Dummy_For_Package is
+   begin
+      null;
+   end Dummy_For_Package;
 begin
    bignum_init(Two);
    bignum_from_int(Two, 2);

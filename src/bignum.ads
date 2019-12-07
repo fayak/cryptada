@@ -1,9 +1,10 @@
 with bn_h;                  use bn_h;
+with Ada.Unchecked_Deallocation;
 
 package Bignum is
    type Big_Num_Access is access all bn;
 
-   function test return Boolean;
+   procedure Dummy_For_Package;
 
    One : Big_Num_Access := new bn;
    Two : Big_Num_Access := new bn;
@@ -19,4 +20,8 @@ package Bignum is
    Miller_1373653 : Big_Num_Access := new bn;
    Miller_9080191 : Big_Num_Access := new bn;
    Miller_341550071728321 : Big_Num_Access := new bn;
+
+   procedure Free_Bignum is new Ada.Unchecked_Deallocation
+     (Object => bn, Name => Big_Num_Access);
+
 end Bignum;
