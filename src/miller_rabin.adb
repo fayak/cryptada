@@ -100,7 +100,7 @@ package body miller_rabin is
                        Miller_Rabin_Witness(N, Miller_17, S, D, N_Minus)
                     );
       end if;
-      return False;
+      return True;
    end Miller_Rabin_p;
 
 end miller_rabin;
