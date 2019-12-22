@@ -1,10 +1,15 @@
 with bignum; use bignum;
 with Ada.Numerics.Float_Random;
+with Interfaces; use Interfaces;
 
 package Prng is
 
-   procedure Random (dst: Big_Num_Access; nb_Bit: Integer);
+   procedure Feed (Entropy : Integer);
    
 private
-   gen: Ada.Numerics.Float_Random.Generator;
+   Entropy_Pool : Integer := 0;
+   Entropy_Count : Natural := 0;
+   Last_Integer : Integer := 0;
+   Input_Rotate : Integer := 0;
+   Rotate_Max : Integer := 31;
 end Prng;

@@ -24,74 +24,32 @@ There may well be room for performance-optimizations and improvements.
 #include <assert.h>
 
 
-/* This macro defines the word size in bytes of the array that constitues the big-number data structure. */
-#ifndef WORD_SIZE
-  #define WORD_SIZE 2
-#endif
-
-/* Size of big-numbers in bytes */
-// #define BN_ARRAY_SIZE    (256 / WORD_SIZE)
-#define BN_ARRAY_SIZE    (64 / 2)
-// #define STR_DEST_SIZE    BN_ARRAY_SIZE * 4
-#define STR_DEST_SIZE    256
-
-/* Here comes the compile-time specialization for how large the underlying array size should be. */
-/* The choices are 1, 2 and 4 bytes in size with uint32, uint64 for WORD_SIZE==4, as temporary. */
-#ifndef WORD_SIZE
-  #error Must define WORD_SIZE to be 1, 2, 4
-#elif (WORD_SIZE == 1)
-  /* Data type of array in structure */
-  #define DTYPE                    uint8_t
-  /* bitmask for getting MSB */
-  #define DTYPE_MSB                ((DTYPE_TMP)(0x80))
-  /* Data-type larger than DTYPE, for holding intermediate results of calculations */
-  #define DTYPE_TMP                uint32_t
-  /* sprintf format string */
-  #define SPRINTF_FORMAT_STR       "%.02x"
-  #define SSCANF_FORMAT_STR        "%2hhx"
-  /* Max value of integer type */
-  #define MAX_VAL                  ((DTYPE_TMP)0xFF)
-#elif (WORD_SIZE == 2)
-  #define DTYPE                    uint16_t
-  #define DTYPE_TMP                uint32_t
-  #define DTYPE_MSB                ((DTYPE_TMP)(0x8000))
-  #define SPRINTF_FORMAT_STR       "%.04x"
-  #define SSCANF_FORMAT_STR        "%4hx"
-  #define MAX_VAL                  ((DTYPE_TMP)0xFFFF)
-#elif (WORD_SIZE == 4)
-  #define DTYPE                    uint32_t
-  #define DTYPE_TMP                uint64_t
-  #define DTYPE_MSB                ((DTYPE_TMP)(0x80000000))
-  #define SPRINTF_FORMAT_STR       "%.08x"
-  #define SSCANF_FORMAT_STR        "%8x"
-  #define MAX_VAL                  ((DTYPE_TMP)0xFFFFFFFF)
-#endif
-#ifndef DTYPE
-  #error DTYPE must be defined to uint8_t, uint16_t uint32_t or whatever
-#endif
-
-
+#define BN_ARRAY_SIZE    64
+#define STR_DEST_SIZE    32
 /* Custom assert macro - easy to disable */
 #define require(p, msg) assert(p && #msg)
 
+#define BASE 256
+#define WORD_SIZE 8
+#define WORD_MASK 0xff
 
 /* Data-holding structure: array of DTYPEs */
 struct bn
 {
-  DTYPE array[BN_ARRAY_SIZE];
+  uint8_t array[BN_ARRAY_SIZE];
+  uint32_t size;
+  uint8_t neg;
 };
 
 /* Tokens returned by bignum_cmp() for value comparison */
-enum { SMALLER = -1, EQUAL = 0, LARGER = 1 };
-
-
+enum { SMALLER = -1, EQUAL = 0, BIGGER = 1 };
 
 /* Initialization functions: */
 void bignum_init(struct bn* n);
-void bignum_from_int(struct bn* n, DTYPE_TMP i);
+void bignum_from_int(struct bn* n, int32_t i);
 int  bignum_to_int(struct bn* n);
-void bignum_from_string(struct bn* n, char* str, int nbytes);
-void bignum_to_string(struct bn* n, char* str, int maxsize);
+void bignum_from_string(struct bn* n, char* str, uint32_t nbytes);
+void bignum_to_string(struct bn* n, char* str, uint32_t maxsize);
 
 /* Basic arithmetic operations: */
 void bignum_add(struct bn* a, struct bn* b, struct bn* c); /* c = a + b */
@@ -99,31 +57,56 @@ void bignum_sub(struct bn* a, struct bn* b, struct bn* c); /* c = a - b */
 void bignum_mul(struct bn* a, struct bn* b, struct bn* c); /* c = a * b */
 void bignum_div(struct bn* a, struct bn* b, struct bn* c); /* c = a / b */
 void bignum_mod(struct bn* a, struct bn* b, struct bn* c); /* c = a % b */
-void bignum_divmod(struct bn* a, struct bn* b, struct bn* c, struct bn* d); /* c = a/b, d = a%b */
+//    void bignum_divmod(struct bn* a, struct bn* b, struct bn* c, struct bn* d); /* c = a/b, d = a%b */
 void bignum_powmod(struct bn* a, struct bn* b, struct bn* n, struct bn* res);
-
-/* Bitwise operations: */
+//
+//    /* Bitwise operations: */
 void bignum_and(struct bn* a, struct bn* b, struct bn* c); /* c = a & b */
 void bignum_or(struct bn* a, struct bn* b, struct bn* c);  /* c = a | b */
 void bignum_xor(struct bn* a, struct bn* b, struct bn* c); /* c = a ^ b */
-void bignum_lshift(struct bn* a, struct bn* b, int nbits); /* b = a << nbits */
-void bignum_rshift(struct bn* a, struct bn* b, int nbits); /* b = a >> nbits */
-
-/* Special operators and comparison */
+void bignum_lshift(struct bn* a, struct bn* b, uint32_t nbits); /* b = a << nbits */
+void bignum_rshift(struct bn* a, struct bn* b, uint32_t nbits); /* b = a >> nbits */
+//
+//    /* Special operators and comparison */
 int  bignum_cmp(struct bn* a, struct bn* b);               /* Compare: returns LARGER, EQUAL or SMALLER */
 int  bignum_is_zero(struct bn* n);                         /* For comparison with zero */
 void bignum_inc(struct bn* n);                             /* Increment: add one to n */
 void bignum_dec(struct bn* n);                             /* Decrement: subtract one from n */
 void bignum_pow(struct bn* a, struct bn* b, struct bn* c); /* Calculate a^b -- e.g. 2^10 => 1024 */
-void bignum_isqrt(struct bn* a, struct bn* b);             /* Integer square root -- e.g. isqrt(5) => 2*/
+//    void bignum_isqrt(struct bn* a, struct bn* b);             /* Integer square root -- e.g. isqrt(5) => 2*/
 void bignum_assign(struct bn* dst, struct bn* src);        /* Copy src into dst -- dst := src */
 
-/* Constants */
-struct bn *bignum_one(void); // 1
-struct bn *bignum_two(void); // 2
-struct bn *bignum_three(void); // 3
-struct bn *bignum_five(void); // 5
-struct bn *bignum_seven(void); // 7
-struct bn *bignum_2047(void); // 2047
+uint32_t bignum_nb_bits(struct bn* n);
+
+
+/*
+ *  Cryptographic PRNG
+ *
+ *  Based on linux random.c
+ *
+ *
+ * */
+
+#define POOL_SIZE 64
+#define _WORD_MASK (POOL_SIZE - 1)
+
+uint32_t rol32(uint32_t n, unsigned int nb);
+
+struct entropy_pool {
+    uint32_t pool[POOL_SIZE];
+    uint8_t i;
+    int rotate;
+};
+
+static uint32_t const twist_table[8] = {
+ 0x00000000, 0x3b6e20c8, 0x76dc4190, 0x4db26158,
+ 0xedb88320, 0xd6d6a3e8, 0x9b64c2b0, 0xa00ae278 };
+
+static uint32_t const taps[] = {
+    128, 104, 76, 51, 25, 1
+}; // P(X) = X^128 + X^104 + X^76 + X^51 + X^25 + X + 1
+
+// Q(X) = alpha^3 (P(X) - 1) + 1 with alpha^3 compute using twist_table
+void mix_pool(int *entropy, struct entropy_pool *pool);
 
 #endif /* #ifndef __BIGNUM_H__ */

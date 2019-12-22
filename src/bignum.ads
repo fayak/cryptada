@@ -6,6 +6,7 @@ package Bignum is
 
    procedure Dummy_For_Package;
 
+   Zero : Big_Num_Access := new bn;
    One : Big_Num_Access := new bn;
    Two : Big_Num_Access := new bn;
    Three : Big_Num_Access := new bn;

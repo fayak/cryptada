@@ -6,6 +6,7 @@ package body Bignum is
       null;
    end Dummy_For_Package;
 begin
+   bignum_init(Zero);
    bignum_init(Two);
    bignum_from_int(Two, 2);
    bignum_init(One);
@@ -34,5 +35,5 @@ begin
    bignum_from_int(Miller_9080191, 9080191);
    
    bignum_init(Miller_341550071728321);
-   bignum_from_string(Miller_341550071728321, Interfaces.C.Strings.New_String("000136A352B2C8C1"), 16);
+   bignum_from_string(Miller_341550071728321, Interfaces.C.Strings.New_String("341550071728321"), 16);
 end Bignum;

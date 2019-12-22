@@ -50,12 +50,16 @@ with bignum; use bignum;
 with miller_rabin;
 use miller_rabin;
 with Prng;
+with Rsa;
+
+with gyro_demo;
 
 procedure Main
 is
 
 
-   Big_Num_A : Big_Num_Access := new bn;
+   Big_Num_A, Big_Num_B : Big_Num_Access := new bn;
+   bn_res : Big_Num_Access := null;
 
    Test : Boolean;
 
@@ -94,22 +98,41 @@ begin
    LCD_Std_Out.Clear_Screen;
 
 
+   gyro_demo.Gyro_test;
+
+   bignum_init(Big_Num_A);
+   bignum_from_int(Big_Num_A, 5);
+   bignum_init(Big_Num_B);
+   bignum_from_int(Big_Num_B, 21);
+
+   bn_res := Rsa.Find_Mod_Inverse(Big_Num_A, Big_Num_B);
+   bignum_to_string(bn_res, Buffer, STR_DEST_SIZE);
+   --LCD_Std_Out.Put_Line("Find Mod Inverse : ");
+   --LCD_Std_Out.Put(Interfaces.C.Strings.Value(Buffer));
+
    LCD_Std_Out.Put_Line("Miller Rabinou time");
    --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
    bignum_init(Big_Num_A);
-   for n in Natural range 0..15 loop
+   --Prng.Random(Big_Num_A, Nb_Bit);
+   Nb_Bit := 32;
+         bignum_inc(Big_Num_A);
+
+     -- Prng.Random(Big_Num_A, Nb_Bit);
+      bignum_inc(Big_Num_A);
+
+   for n in Natural range 0..24 loop
       --bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));
-      Prng.Random(Big_Num_A, Nb_Bit);
-      Nb_Bit := 32;
+      bignum_inc(Big_Num_A);
+      bignum_inc(Big_Num_A);
       --LCD_Std_Out.Put(n'Image);
       bignum_to_string(Big_Num_A, Buffer, STR_DEST_SIZE);
       LCD_Std_Out.Put(Interfaces.C.Strings.Value(Buffer));
       LCD_Std_Out.Put(":=");
       Test := Miller_Rabin_p(Big_Num_A);
       if Test then
-         LCD_Std_Out.Put_Line("Prime");
+         LCD_Std_Out.Put_Line("Prim");
       else
-         LCD_Std_Out.Put_Line("Composite");
+         LCD_Std_Out.Put_Line("Comp");
       end if;
    end loop;
    loop
