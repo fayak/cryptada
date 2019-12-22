@@ -7,7 +7,7 @@ with LCD_Std_Out; use LCD_Std_Out;
 
 
 package body prng is
-   
+
    procedure Feed (Entropy : Integer) is
    begin
       if Entropy = Last_Integer then
@@ -17,6 +17,7 @@ package body prng is
       mix_pool(Interfaces.C.int(Entropy), Entropy_Pool_State);
       if Pool_Init < 16 then
          Pool_Init := Pool_Init + 1;
+         -- Allow for the PRNG to be filled with initial values before considering increasing the entropy counter
       else
          LCD_Std_Out.Put(0, 42, Integer(credit_entropy(entropy_estimator(Interfaces.C.int(Entropy)), Entropy_Pool_State))'Img);
       end if;
