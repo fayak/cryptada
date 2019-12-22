@@ -508,12 +508,6 @@ void test_random(void)
         printf(" - %d\n", pool.entropy_count);
     }
     print_pool(&pool);
-
-    for (int i = 1; i != 4096; i *= 2)
-    {
-        printf("log2(%d)=%d\n", i, entropy_estimator(i));
-        printf("log2(%d)=%d\n", (int)(i*1.5), entropy_estimator((int)(i*1.5)));
-    }
 }
 
 int main(void)

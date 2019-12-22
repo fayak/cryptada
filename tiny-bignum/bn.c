@@ -858,7 +858,6 @@ int credit_entropy(int nb_bits, struct entropy_pool *pool)
     else if (add_entropy > 0)
     {
         const int s = POOL_BIT_SHIFT + ENTROPY_SHIFT + 2; // +2 is the /4 in the above formula
-        printf("add_entropy = %d\n", s);
         add_entropy = ((MAX_ENTROPY - pool->entropy_count) * add_entropy * 3) >> s;
     }
     int new_entropy_count = pool->entropy_count + add_entropy;
