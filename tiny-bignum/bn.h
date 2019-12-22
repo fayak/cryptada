@@ -83,8 +83,6 @@ uint32_t bignum_nb_bits(struct bn* n);
  *  Cryptographic PRNG
  *
  *  Based on linux random.c
- *
- *
  * */
 
 #define POOL_SIZE 64
@@ -96,6 +94,7 @@ struct entropy_pool {
     uint32_t pool[POOL_SIZE];
     uint8_t i;
     int rotate;
+    uint32_t entropy_count;
 };
 
 static uint32_t const twist_table[8] = {
@@ -107,6 +106,22 @@ static uint32_t const taps[] = {
 }; // P(X) = X^128 + X^104 + X^76 + X^51 + X^25 + X + 1
 
 // Q(X) = alpha^3 (P(X) - 1) + 1 with alpha^3 compute using twist_table
-void mix_pool(int *entropy, struct entropy_pool *pool);
+// Mix some entropy in the entropy pool
+void mix_pool(int entropy, struct entropy_pool *pool);
+
+
+#define ENTROPY_SHIFT 3
+#define ENTROPY_BITS(r) ((r) >> ENTROPY_SHIFT)
+#define MAX_ENTROPY (POOL_SIZE * 8)
+// log(POOL_SIZE) + 2
+// Used for faster division by bitshift
+#define POOL_BIT_SHIFT (6 + 2)
+
+enum { EMPTY = 0, LOW = 1, MEDIUM = 2, FILLED = 3, FULL = 4 };
+extern const char* ENTROPY_POOL_COUNT_TXT[16]; // = {"EMPTY", "LOW", "MEDIUM", "FILLED", "FULL"};
+// Credit the entropy pool for a given amount of bits of entropy
+int credit_entropy(int nb_bits, struct entropy_pool *pool);
+
+int entropy_estimator(int x);
 
 #endif /* #ifndef __BIGNUM_H__ */

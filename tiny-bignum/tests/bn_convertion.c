@@ -488,17 +488,32 @@ void print_pool(struct entropy_pool *pool)
     printf("\n");
 }
 
+
 void test_random(void)
 {
     struct entropy_pool pool = {0};
     int entropy = 0x12357;
     for (int i = 0; i < 16; ++i)
-        mix_pool(&entropy, &pool);
+    {
+        mix_pool(entropy, &pool);
+        printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(entropy_estimator(entropy), &pool)]);
+        printf(" - %d\n", pool.entropy_count);
+    }
     print_pool(&pool);
     entropy = 0xfdf661a;
     for (int i = 0; i < 16; ++i)
-        mix_pool(&entropy, &pool);
+    {
+        mix_pool(entropy, &pool);
+        printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(entropy_estimator(entropy), &pool)]);
+        printf(" - %d\n", pool.entropy_count);
+    }
     print_pool(&pool);
+
+    for (int i = 1; i != 4096; i *= 2)
+    {
+        printf("log2(%d)=%d\n", i, entropy_estimator(i));
+        printf("log2(%d)=%d\n", (int)(i*1.5), entropy_estimator((int)(i*1.5)));
+    }
 }
 
 int main(void)

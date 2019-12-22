@@ -820,9 +820,9 @@ inline uint32_t rol32(uint32_t n, unsigned int nb)
     return (n >> (nb & 31)) | (n << ((-nb) & 31));
 }
 
-void mix_pool(int *entropy, struct entropy_pool *pool)
+void mix_pool(int entropy, struct entropy_pool *pool)
 {
-    char *entropy_bytes = (void *)entropy;
+    char *entropy_bytes = (void *)(&entropy);
     uint32_t w;
     for (uint8_t i = 0; i < sizeof(int); ++i)
     {
@@ -835,4 +835,60 @@ void mix_pool(int *entropy, struct entropy_pool *pool)
             w ^= pool->pool[(pool->i + taps[j]) & _WORD_MASK];
         pool->pool[pool->i] = (w >> 3) ^ twist_table[w & 7];
     }
+}
+
+// entropy <- entropy + (MAX_ENTROPY - entropy) * 3/4 * add_entropy / MAX_ENTROPY
+int credit_entropy(int nb_bits, struct entropy_pool *pool)
+{
+    if (pool->entropy_count >= MAX_ENTROPY)
+    {
+        pool->entropy_count = MAX_ENTROPY;
+        return FULL;
+    }
+
+    int add_entropy = nb_bits << ENTROPY_SHIFT;
+
+    if (add_entropy > MAX_ENTROPY / 2)
+    {
+        // The given above formula is a faster approximation that cannot
+        // work if add_entropy > MAX_ENTROPY / 2
+        credit_entropy(nb_bits / 2, pool);
+        return credit_entropy(nb_bits / 2, pool);
+    }
+    else if (add_entropy > 0)
+    {
+        const int s = POOL_BIT_SHIFT + ENTROPY_SHIFT + 2; // +2 is the /4 in the above formula
+        printf("add_entropy = %d\n", s);
+        add_entropy = ((MAX_ENTROPY - pool->entropy_count) * add_entropy * 3) >> s;
+    }
+    int new_entropy_count = pool->entropy_count + add_entropy;
+    if (new_entropy_count <= 0)
+    {
+        pool->entropy_count = 0;
+        return EMPTY;
+    }
+    if (new_entropy_count >= MAX_ENTROPY)
+    {
+        pool->entropy_count = MAX_ENTROPY;
+        return FULL;
+    }
+    pool->entropy_count = new_entropy_count;
+    return (int)(((float)new_entropy_count / (float)MAX_ENTROPY) * 3) + 1;
+}
+
+const char* ENTROPY_POOL_COUNT_TXT[16]  = {"EMPTY", "LOW", "MEDIUM", "FILLED", "FULL"};
+
+int entropy_estimator(int x)
+{
+    if (x < 8)
+        return 0;
+    if (x > 4096) // 2^12
+        return 12;
+    int cnt = 3;
+    while (x > 8)
+    {
+        cnt++;
+        x >>= 1;
+    }
+    return cnt - (x != 8);
 }

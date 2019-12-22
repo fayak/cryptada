@@ -12,6 +12,7 @@ with STM32.EXTI; use STM32.EXTI;
 with LCD_Std_Out;
 
 with L3GD20;  use L3GD20;
+with Prng;
 
 package body gyro_demo is
 
@@ -81,6 +82,10 @@ begin
        LCD_Std_Out.Put (60, 0, Axes.X'Img & "  ");
        LCD_Std_Out.Put (120, 0, Axes.Y'Img & "  ");
        LCD_Std_Out.Put (180, 0, Axes.Z'Img & "  ");
+         Prng.Feed(Integer(Axes.X));
+                Prng.Feed(Integer(Axes.Y));
+
+                Prng.Feed(Integer(Axes.Z));
 
    end loop;
    end Gyro_test;
