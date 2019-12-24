@@ -500,7 +500,7 @@ void test_random(void)
         printf(" - %d\n", pool.entropy_count);
     }
     print_pool(&pool);
-    entropy = 0xfdf661a;
+    entropy = 0xfdf661b;
     for (int i = 0; i < 16; ++i)
     {
         mix_pool(entropy, &pool);
@@ -508,6 +508,10 @@ void test_random(void)
         printf(" - %d\n", pool.entropy_count);
     }
     print_pool(&pool);
+    printf("Random : \n");
+    for (uint8_t i = 0; i < 8; ++i, printf("\n"))
+        for (uint8_t j = 0; j < 8; ++j, printf(":"))
+            printf("%x", get_random(&pool));
 }
 
 int main(void)
