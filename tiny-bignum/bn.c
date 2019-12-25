@@ -97,7 +97,7 @@ void remove_zeros(struct bn* n)
     uint32_t old = n->size;
     for (uint32_t i = 0; i < old; i++)
     {
-        if (n->array[BN_ARRAY_SIZE - old + i] != 0)
+        if (unlikely(n->array[BN_ARRAY_SIZE - old + i] != 0)) // Unlikely since this condition breaks the loop -> Even if it's more likely, the pipeline will stall anyway
             break;
         n->size--;
     }
@@ -223,7 +223,7 @@ void bignum_dec(struct bn* n)
     {
         int32_t tmp = BIGNUM_TAIL(n, i) - carry;
         carry = tmp < 0;
-        if (tmp < 0)
+        if (unlikely(tmp < 0))
             tmp += BASE;
         BIGNUM_TAIL(n, i) = tmp;
     }
@@ -237,7 +237,7 @@ void bignum_add(struct bn* a, struct bn* b, struct bn* c)
     require(b, "b is null");
     require(c, "c is null");
 
-    if (a->neg && !b->neg) // (-a) + b -> b + (-a)
+    if (unlikely(a->neg && !b->neg)) // (-a) + b -> b + (-a)
     {
         bignum_add(b, a, c);
         return;
@@ -260,7 +260,7 @@ void bignum_add(struct bn* a, struct bn* b, struct bn* c)
     {
         tmp = BIGNUM_TAIL(a, i) + BIGNUM_TAIL(b, i) + carry;
         carry = tmp >= BASE;
-        if (carry)
+        if (unlikely(carry)) // 45% des cas
             bignum_push(c, tmp - BASE);
         else
             bignum_push(c, tmp);
@@ -307,12 +307,12 @@ void bignum_sub(struct bn* a, struct bn* b, struct bn* c)
     require(b, "b is null");
     require(c, "b is null");
 
-    if (bignum_is_zero(b))
+    if (unlikely(bignum_is_zero(b)))
     {
         bignum_assign(c, a);
         return;
     }
-    if (a->neg != b->neg)
+    if (unlikely(a->neg != b->neg))
     {
         b->neg = !b->neg;
         bignum_add(a, b, c);
@@ -334,7 +334,7 @@ void bignum_sub(struct bn* a, struct bn* b, struct bn* c)
     for (uint32_t i = 0; i < a->size; ++i)
     {
         int16_t tmp = (int16_t)BIGNUM_TAIL(a, i) - (int16_t)BIGNUM_TAIL(b, i) - carry;
-        if (tmp >= 0)
+        if (likely(tmp >= 0))
         {
             BIGNUM_TAIL(c, i) = tmp;
             carry = 0;
@@ -364,7 +364,7 @@ void bignum_inc(struct bn* n)
             carry = tmp >= BASE;
             BIGNUM_TAIL(n, i) = tmp % BASE;
         }
-        if (carry)
+        if (unlikely(carry))
             bignum_push(n, 1);
         return;
     }
@@ -382,7 +382,7 @@ void bignum_inc(struct bn* n)
     {
         int32_t tmp = BIGNUM_TAIL(n, i) - carry;
         carry = tmp < 0;
-        if (tmp < 0)
+        if (unlikely(tmp < 0))
             tmp += BASE;
         BIGNUM_TAIL(n, i) = tmp;
     }
@@ -404,7 +404,7 @@ void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
 
     bignum_init(c);
 
-    if (bignum_is_zero(a) || bignum_is_zero(b))
+    if (unlikely(bignum_is_zero(a) || bignum_is_zero(b)))
         return;
 
     for (uint32_t i = 0; i < a->size; ++i)
@@ -840,7 +840,7 @@ void mix_pool(int entropy, struct entropy_pool *pool)
 // entropy <- entropy + (MAX_ENTROPY - entropy) * 3/4 * add_entropy / MAX_ENTROPY
 int credit_entropy(int nb_bits, struct entropy_pool *pool)
 {
-    if (pool->entropy_count >= MAX_ENTROPY)
+    if (unlikely(pool->entropy_count >= MAX_ENTROPY))
     {
         pool->entropy_count = MAX_ENTROPY;
         return FULL;
@@ -848,14 +848,14 @@ int credit_entropy(int nb_bits, struct entropy_pool *pool)
 
     int add_entropy = nb_bits << ENTROPY_SHIFT;
 
-    if (add_entropy > MAX_ENTROPY / 2)
+    if (unlikely(add_entropy > MAX_ENTROPY / 2))
     {
         // The given above formula is a faster approximation that cannot
         // work if add_entropy > MAX_ENTROPY / 2
         credit_entropy(nb_bits / 2, pool);
         return credit_entropy(nb_bits / 2, pool);
     }
-    else if (add_entropy > 0)
+    else if (likely(add_entropy > 0))
     {
         const int s = POOL_BIT_SHIFT + ENTROPY_SHIFT + 2; // +2 is the /4 in the above formula
         add_entropy = ((MAX_ENTROPY - pool->entropy_count) * add_entropy * 3) >> s;
@@ -866,7 +866,7 @@ int credit_entropy(int nb_bits, struct entropy_pool *pool)
         pool->entropy_count = 0;
         return EMPTY;
     }
-    if (new_entropy_count >= MAX_ENTROPY)
+    if (unlikely(new_entropy_count >= MAX_ENTROPY))
     {
         pool->entropy_count = MAX_ENTROPY;
         return FULL;
@@ -957,6 +957,8 @@ void chacha20(uint32_t *state, uint32_t *out)
     for (uint8_t i = 0; i < 16; ++i)
         out[i] = state[i] + x[i];
     state[12]++; // increase block counter
+    if (unlikely(!state[12]))
+        state[13]++;
 }
 
 uint8_t _give_random_byte(struct entropy_pool *pool)
@@ -980,6 +982,7 @@ uint8_t get_random(struct entropy_pool *pool)
         for (uint8_t i = 16; i < POOL_SIZE; ++i)
             pool->chacha20_state[i % 16] ^= pool->pool[i];
         pool->chacha20_state[12] = 1; // Set the block counter
+        pool->chacha20_state[13] = 0; // Set the block counter
         pool->chacha20_init = 1;
     }
 
@@ -991,7 +994,7 @@ uint8_t get_random(struct entropy_pool *pool)
         chacha20(pool->chacha20_state, key_stream);
         for (uint8_t j = 0; j < 16; ++j)
         {
-            if (i == 0)
+            if (unlikely(i == 0))
                 hash_all[j]  = (key_stream[j] ^ pool->pool[i + j]);
             else
                 hash_all[j] ^= (key_stream[j] ^ pool->pool[i + j]);
@@ -1000,13 +1003,10 @@ uint8_t get_random(struct entropy_pool *pool)
 
     uint32_t hash[4] = {0};
     // Fold the 64 bytes hash in a 16 bytes hash
-    for (uint8_t i = 0; i < 16; ++i)
-    {
-        if (i < 4)
-            hash[i]  = hash_all[i];
-        else
-            hash[i & 3] ^= hash_all[i];
-    }
+    for (uint8_t i = 0; i < 4; ++i)
+        hash[i]      = hash_all[i];
+    for (uint8_t i = 4; i < 16; ++i)
+        hash[i & 3] ^= hash_all[i];
 
     //Mix the hash back in the pool
     for (uint8_t i = 0; i < 4; ++i)

@@ -24,6 +24,9 @@ There may well be room for performance-optimizations and improvements.
 #include <assert.h>
 
 
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
+
 #define BN_ARRAY_SIZE    64
 #define STR_DEST_SIZE    32
 /* Custom assert macro - easy to disable */
