@@ -121,11 +121,11 @@ package body rsa is
       
    begin
       loop
-         Prng.Random(p, Nb_Bits);
+         --Prng.Random(p, Nb_Bits);
          exit when miller_rabin.Miller_Rabin_p(p);
       end loop;
       loop
-         Prng.Random(q, Nb_Bits);
+         --Prng.Random(q, Nb_Bits);
          exit when miller_rabin.Miller_Rabin_p(q);
       end loop;
       bignum_mul(p, q, n);

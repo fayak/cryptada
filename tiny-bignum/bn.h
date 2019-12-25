@@ -24,6 +24,9 @@ There may well be room for performance-optimizations and improvements.
 #include <assert.h>
 
 
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
+
 #define BN_ARRAY_SIZE    64
 #define STR_DEST_SIZE    32
 /* Custom assert macro - easy to disable */
@@ -83,8 +86,6 @@ uint32_t bignum_nb_bits(struct bn* n);
  *  Cryptographic PRNG
  *
  *  Based on linux random.c
- *
- *
  * */
 
 #define POOL_SIZE 64
@@ -94,8 +95,18 @@ uint32_t rol32(uint32_t n, unsigned int nb);
 
 struct entropy_pool {
     uint32_t pool[POOL_SIZE];
-    uint8_t i;
-    int rotate;
+    uint32_t entropy_count;
+
+    // Entropy mixing
+    uint8_t i; // Where to put the created entropy. Init it to 0, and don't touch
+    int rotate; // Number of rol32 rotation to perform
+
+    // Entropy extraction
+    uint8_t j; // Where to get the last 16 bytes of entropy to XOR. Init it to 0, and don't touch
+    uint32_t chacha20_state[16];
+    uint8_t chacha20_init; // Is chacha20_state initialized ?
+    uint32_t output[2]; // Contains (remaining_extracted) random bytes to be given to the user
+    uint8_t remaining_extracted;
 };
 
 static uint32_t const twist_table[8] = {
@@ -107,6 +118,29 @@ static uint32_t const taps[] = {
 }; // P(X) = X^128 + X^104 + X^76 + X^51 + X^25 + X + 1
 
 // Q(X) = alpha^3 (P(X) - 1) + 1 with alpha^3 compute using twist_table
-void mix_pool(int *entropy, struct entropy_pool *pool);
+// Mix some entropy in the entropy pool
+void mix_pool(int entropy, struct entropy_pool *pool);
+
+
+#define ENTROPY_SHIFT 3
+#define ENTROPY_BITS(r) ((r) >> ENTROPY_SHIFT)
+#define MAX_ENTROPY (POOL_SIZE * 8)
+// log(POOL_SIZE) + 2
+// Used for faster division by bitshift
+#define POOL_BIT_SHIFT (6 + 2)
+
+enum { EMPTY = 0, LOW = 1, MEDIUM = 2, FILLED = 3, FULL = 4 };
+extern const char* ENTROPY_POOL_COUNT_TXT[16]; // = {"EMPTY", "LOW", "MEDIUM", "FILLED", "FULL"};
+// Credit the entropy pool for a given amount of bits of entropy
+int credit_entropy(int nb_bits, struct entropy_pool *pool);
+
+int entropy_estimator(int x);
+
+// Extract a random byte from the entropy pool. Does not check if the pool has
+// enough entropy to do so, so be advised.
+//
+// When it needs to extract entropy from the pool, it requires 64 bits of entropy.
+// One must assert (pool->remaining_extracted > 0 || pool->entropy_count >= 64) before calling get_random
+uint8_t get_random(struct entropy_pool *pool);
 
 #endif /* #ifndef __BIGNUM_H__ */

@@ -16,6 +16,15 @@ package bn_h is
    WORD_SIZE : constant := 8;  --  bn.h:33
    WORD_MASK : constant := 16#ff#;  --  bn.h:34
 
+   POOL_SIZE : constant := 64;  --  bn.h:88
+
+   ENTROPY_SHIFT : constant := 3;  --  bn.h:113
+   --  arg-macro: function ENTROPY_BITS (r)
+   --    return (r) >> ENTROPY_SHIFT;
+   --  unsupported macro: MAX_ENTROPY (POOL_SIZE * 8)
+
+   POOL_BIT_SHIFT : constant := (6 + 2);  --  bn.h:118
+
   --Big number library - arithmetic on multiple-precision unsigned integers.
   --This library is an implementation of arithmetic on arbitrarily large integers.
   --The difference between this and other implementations, is that the data structure
@@ -218,5 +227,61 @@ package bn_h is
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_nb_bits";
+
+  -- *  Cryptographic PRNG
+  -- *
+  -- *  Based on linux random.c
+  -- *  
+
+   function rol32 (n : bits_stdint_uintn_h.uint32_t; nb : unsigned) return bits_stdint_uintn_h.uint32_t  -- bn.h:91
+   with Import => True, 
+        Convention => C, 
+        External_Name => "rol32";
+
+   type anon908_pool_array is array (0 .. 63) of aliased bits_stdint_uintn_h.uint32_t;
+   type entropy_pool is record
+      pool : aliased anon908_pool_array;  -- bn.h:94
+      i : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:95
+      rotate : aliased int;  -- bn.h:96
+      entropy_count : aliased bits_stdint_uintn_h.uint32_t;  -- bn.h:97
+   end record
+   with Convention => C_Pass_By_Copy;  -- bn.h:93
+
+   twist_table : aliased array (0 .. 7) of aliased bits_stdint_uintn_h.uint32_t  -- bn.h:100
+   with Import => True, 
+        Convention => C, 
+        External_Name => "twist_table";
+
+   taps : aliased array (0 .. 5) of aliased bits_stdint_uintn_h.uint32_t  -- bn.h:104
+   with Import => True, 
+        Convention => C, 
+        External_Name => "taps";
+
+  -- P(X) = X^128 + X^104 + X^76 + X^51 + X^25 + X + 1
+  -- Q(X) = alpha^3 (P(X) - 1) + 1 with alpha^3 compute using twist_table
+  -- Mix some entropy in the entropy pool
+   procedure mix_pool (entropy : int; pool : access entropy_pool)  -- bn.h:110
+   with Import => True, 
+        Convention => C, 
+        External_Name => "mix_pool";
+
+  -- log(POOL_SIZE) + 2
+  -- Used for faster division by bitshift
+  -- = {"EMPTY", "LOW", "MEDIUM", "FILLED", "FULL"};
+   ENTROPY_POOL_COUNT_TXT : array (0 .. 15) of Interfaces.C.Strings.chars_ptr  -- bn.h:121
+   with Import => True, 
+        Convention => C, 
+        External_Name => "ENTROPY_POOL_COUNT_TXT";
+
+  -- Credit the entropy pool for a given amount of bits of entropy
+   function credit_entropy (nb_bits : int; pool : access entropy_pool) return int  -- bn.h:123
+   with Import => True, 
+        Convention => C, 
+        External_Name => "credit_entropy";
+
+   function entropy_estimator (x : int) return int  -- bn.h:125
+   with Import => True, 
+        Convention => C, 
+        External_Name => "entropy_estimator";
 
 end bn_h;

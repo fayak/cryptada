@@ -1,6 +1,12 @@
 #include "bn.h"
 #include <string.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+
 
 #define BEFORE printf("Running      : %s\n", __func__)
 #define AFTER  printf("Test succeed : %s\n", __func__)
@@ -488,17 +494,43 @@ void print_pool(struct entropy_pool *pool)
     printf("\n");
 }
 
+
 void test_random(void)
 {
     struct entropy_pool pool = {0};
     int entropy = 0x12357;
     for (int i = 0; i < 16; ++i)
-        mix_pool(&entropy, &pool);
+    {
+        mix_pool(entropy, &pool);
+        printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(entropy_estimator(entropy), &pool)]);
+        printf(" - %d\n", pool.entropy_count);
+    }
     print_pool(&pool);
-    entropy = 0xfdf661a;
+    entropy = 0xfdf661b;
     for (int i = 0; i < 16; ++i)
-        mix_pool(&entropy, &pool);
+    {
+        mix_pool(entropy, &pool);
+        printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(entropy_estimator(entropy), &pool)]);
+        printf(" - %d/%d\n", pool.entropy_count, MAX_ENTROPY);
+    }
     print_pool(&pool);
+    printf("Random : \n");
+    for (uint8_t i = 0; i < 8; ++i, printf("\n"))
+        for (uint8_t j = 0; j < 8; ++j, printf(":"))
+            printf("%02x", get_random(&pool));
+
+    int fd = open("/dev/urandom", O_RDONLY);
+    if (fd == -1)
+        err(1, "cannot open");
+    for (int i = 0; i < 1000; ++i)
+    {
+        read(fd, &entropy, 1);
+        mix_pool(entropy, &pool);
+    }
+    print_pool(&pool);
+    printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(1000*8, &pool)]);
+    printf(" - %d/%d\n", pool.entropy_count, MAX_ENTROPY);
+    close(fd);
 }
 
 int main(void)
