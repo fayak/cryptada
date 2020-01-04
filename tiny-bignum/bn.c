@@ -828,7 +828,7 @@ void mix_pool(int entropy, struct entropy_pool *pool)
     {
         char byte = entropy_bytes[i];
         w = rol32(byte, pool->rotate);
-        pool->rotate = (pool->rotate + 7) % 31;
+        pool->rotate = (pool->rotate + 7) & 31;
         pool->i = (pool->i - 1) & _WORD_MASK;
 
         for (uint8_t j = 0; j < 6; ++j)
@@ -840,12 +840,6 @@ void mix_pool(int entropy, struct entropy_pool *pool)
 // entropy <- entropy + (MAX_ENTROPY - entropy) * 3/4 * add_entropy / MAX_ENTROPY
 int credit_entropy(int nb_bits, struct entropy_pool *pool)
 {
-    if (unlikely(pool->entropy_count >= MAX_ENTROPY))
-    {
-        pool->entropy_count = MAX_ENTROPY;
-        return FULL;
-    }
-
     int add_entropy = nb_bits << ENTROPY_SHIFT;
 
     if (unlikely(add_entropy > MAX_ENTROPY / 2))
@@ -1008,6 +1002,10 @@ uint8_t get_random(struct entropy_pool *pool)
     for (uint8_t i = 4; i < 16; ++i)
         hash[i & 3] ^= hash_all[i];
 
+    // Change some of the chacha20 state
+    pool->chacha20_state[hash_all[0] % 12] ^= hash_all[1]; //uint32_t of the key
+    pool->chacha20_state[(hash_all[2] & 1) + 14] ^= hash_all[3]; //uint32_t of the nonce
+
     //Mix the hash back in the pool
     for (uint8_t i = 0; i < 4; ++i)
     {
@@ -1026,6 +1024,6 @@ uint8_t get_random(struct entropy_pool *pool)
     pool->output[0] = (entropy_extract[0] ^ hash[0]) ^ (entropy_extract[2] ^ hash[2]);
     pool->output[1] = (entropy_extract[1] ^ hash[1]) ^ (entropy_extract[3] ^ hash[3]);
     pool->remaining_extracted = 8;
-    credit_entropy(64, pool);
+    credit_entropy(-64, pool);
     return _give_random_byte(pool);
 }

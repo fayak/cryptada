@@ -503,15 +503,15 @@ void test_random(void)
     {
         mix_pool(entropy, &pool);
         printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(entropy_estimator(entropy), &pool)]);
-        printf(" - %d\n", pool.entropy_count);
+        printf(" - %d\n", ENTROPY_COUNT(pool.entropy_count));
     }
     print_pool(&pool);
     entropy = 0xfdf661b;
-    for (int i = 0; i < 16; ++i)
+    for (int i = 0; i < 32; ++i)
     {
         mix_pool(entropy, &pool);
         printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(entropy_estimator(entropy), &pool)]);
-        printf(" - %d/%d\n", pool.entropy_count, MAX_ENTROPY);
+        printf(" - %d/%d (+%d)\n", ENTROPY_COUNT(pool.entropy_count), ENTROPY_COUNT(MAX_ENTROPY), entropy_estimator(entropy));
     }
     print_pool(&pool);
     printf("Random : \n");
@@ -530,7 +530,14 @@ void test_random(void)
     print_pool(&pool);
     printf("%s", ENTROPY_POOL_COUNT_TXT[credit_entropy(1000*8, &pool)]);
     printf(" - %d/%d\n", pool.entropy_count, MAX_ENTROPY);
+    int fd2 = open("/tmp/rng.bin", O_WRONLY | O_CREAT);
+    for (uint32_t j = 0; j < 1024 * 10; ++j)
+    {
+        uint8_t a = get_random(&pool);
+        write(fd2, &a, 1);
+    }
     close(fd);
+    close(fd2);
 }
 
 int main(void)

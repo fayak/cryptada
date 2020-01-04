@@ -8,6 +8,8 @@ package Prng is
    type Entropy_Pool_Access is access all entropy_pool;
    procedure Feed (Entropy : Integer);
    
+   function get_entropy () return Integer;
+   
 private
    Entropy_Pool_State : Entropy_Pool_Access;
    Last_Integer : Integer := 0;

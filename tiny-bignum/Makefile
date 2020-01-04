@@ -7,6 +7,7 @@ CFLAGS_TEST := -I. -Wundef -Wall -Wextra -g $(SANITIZE)
 
 all:
 	@$(CC) $(CFLAGS_TEST) bn.c ./tests/bn_convertion.c  -o ./test_bn
+	@$(CC) $(CFLAGS_TEST) bn.c ./tests/prng.c           -o ./prng
 	@#$(CC) $(CFLAGS) bn.c ./tests/golden.c      -o ./test_golden
 	@#$(CC) $(CFLAGS) bn.c ./tests/hand_picked.c -o ./test_hand_picked
 	@#$(CC) $(CFLAGS) bn.c ./tests/load_cmp.c    -o ./test_load_cmp

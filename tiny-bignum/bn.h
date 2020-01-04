@@ -121,13 +121,14 @@ static uint32_t const taps[] = {
 // Mix some entropy in the entropy pool
 void mix_pool(int entropy, struct entropy_pool *pool);
 
-
+// Allow us to take into account fractions of bits of entropy
 #define ENTROPY_SHIFT 3
-#define ENTROPY_BITS(r) ((r) >> ENTROPY_SHIFT)
-#define MAX_ENTROPY (POOL_SIZE * 8)
-// log(POOL_SIZE) + 2
+// Maximum of entropy in the pool, taking account of partial bits of entropy.
+// shift << 5 is for 32 (since there are 32 bits in a uint32_t
+#define MAX_ENTROPY (POOL_SIZE << (5 + ENTROPY_SHIFT))
+// log(POOL_SIZE) + 5
 // Used for faster division by bitshift
-#define POOL_BIT_SHIFT (6 + 2)
+#define POOL_BIT_SHIFT (6 + 5)
 
 enum { EMPTY = 0, LOW = 1, MEDIUM = 2, FILLED = 3, FULL = 4 };
 extern const char* ENTROPY_POOL_COUNT_TXT[16]; // = {"EMPTY", "LOW", "MEDIUM", "FILLED", "FULL"};
@@ -135,6 +136,13 @@ extern const char* ENTROPY_POOL_COUNT_TXT[16]; // = {"EMPTY", "LOW", "MEDIUM", "
 int credit_entropy(int nb_bits, struct entropy_pool *pool);
 
 int entropy_estimator(int x);
+
+// Return the amount of bits of entropy in the pool
+inline uint32_t get_entropy_count(struct entropy_pool *pool)
+{
+    return pool->entropy_count >> ENTROPY_SHIFT;
+}
+#define ENTROPY_COUNT(x) ((x) >> ENTROPY_SHIFT)
 
 // Extract a random byte from the entropy pool. Does not check if the pool has
 // enough entropy to do so, so be advised.
