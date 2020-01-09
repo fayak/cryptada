@@ -59,7 +59,7 @@ procedure Main
 is
 
 
-   Big_Num_A, Big_Num_B : Big_Num_Access := new bn;
+   Big_Num_A, Big_Num_B, n, d ,e : Big_Num_Access := new bn;
    bn_res : Big_Num_Access := null;
 
    Test : Boolean;
@@ -117,10 +117,13 @@ begin
    --LCD_Std_Out.Put_Line("Miller Rabinou time");
    --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
    bignum_init(Big_Num_A);
-   --Prng.Random(Big_Num_A, Nb_Bit);
+
    Nb_Bit := 2;
-   Prng.Random(Big_Num_A, Nb_Bit);
-   bignum_inc(Big_Num_A);
+
+   rsa.Gen_RSA(32, n, d, e);
+   loop
+      null;
+   end loop;
 
    for n in Natural range 0..24 loop
       --bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));

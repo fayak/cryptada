@@ -118,16 +118,28 @@ package body rsa is
    
    procedure Gen_RSA(Nb_Bits : in Integer; n, d , e : in out Big_Num_Access) is
       p, q : Big_Num_Access := new bn;
-      
+      Tmp : Big_Num_Access := new bn;
    begin
+      LCD_Std_Out.Put(0, 42, "RSA: Init");
       loop
-         --Prng.Random(p, Nb_Bits);
+         Prng.Random(p, Nb_Bits);
+         LCD_Std_Out.Put(0, 42, "RSA: Finding p");
+         bignum_mod(p, Two, Tmp);
+         if bignum_is_zero(Tmp) = 1 then
+            bignum_inc(p);
+         end if;
          exit when miller_rabin.Miller_Rabin_p(p);
       end loop;
       loop
-         --Prng.Random(q, Nb_Bits);
+         Prng.Random(q, Nb_Bits);
+         LCD_Std_Out.Put(0, 56, "RSA: Finding q");
+         bignum_mod(q, Two, Tmp);
+         if bignum_is_zero(Tmp) = 1 then
+            bignum_inc(q);
+         end if;
          exit when miller_rabin.Miller_Rabin_p(q);
       end loop;
+      LCD_Std_Out.Put(0, 70, "RSA: Computing priv.");
       bignum_mul(p, q, n);
       bignum_from_int(e, 65537);
       

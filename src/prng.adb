@@ -45,7 +45,7 @@ begin
       bignum_from_int(N, 0);
       Nb_Bits_Work := Nb_Bits;
       while Nb_Bits_Work > 0 loop
-         while get_entropy < 10 and Entropy_Pool_State.remaining_extracted = 0 loop
+         while get_entropy < 1 and Entropy_Pool_State.remaining_extracted = 0 loop
             delay 0.1;
             LCD_Std_Out.Put (0, 28, "Wait. for more entr.");
          end loop;
