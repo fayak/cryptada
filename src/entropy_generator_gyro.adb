@@ -14,12 +14,11 @@ with LCD_Std_Out;
 with L3GD20; use L3GD20;
 with Prng;
 
-package body gyro_demo is
+package body entropy_generator_gyro is
 
-   procedure Gyro_test is
+   procedure init_entropy_collector is
 
-      Axes      : L3GD20.Angle_Rates;
-      Last_Axes : L3GD20.Angle_Rates;
+      Entropy_Count : Integer;
 
       procedure Configure_Gyro;
       --  Configures the on-board gyro chip
@@ -76,17 +75,32 @@ package body gyro_demo is
       Gyro.Set_FIFO_Mode (L3GD20_Stream_Mode);
       LCD_Std_Out.Put (0, 0, "X/Y/Z");
       Gyro.Get_Raw_Angle_Rates (Last_Axes);
-
-      loop
+      Entropy_Count := 0;
+      while Entropy_Count < Prng.Max_Pool_Entropy / 16 loop
          Gyro.Get_Raw_Angle_Rates (Axes);
          LCD_Std_Out.Put (60, 0, Axes.X'Img & "  ");
          LCD_Std_Out.Put (120, 0, Axes.Y'Img & "  ");
          LCD_Std_Out.Put (180, 0, Axes.Z'Img & "  ");
-         Prng.Feed (Integer (Last_Axes.X - Axes.X));
-         Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
-         Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
+         Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
+         Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
+         Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
          Last_Axes := Axes;
       end loop;
-   end Gyro_test;
+   end init_entropy_collector;
 
-end gyro_demo;
+   procedure collect_entropy(Minimum : Integer) is
+      Entropy_Count : Integer;
+   begin
+      Entropy_Count := 0;
+      while Entropy_Count < Minimum loop
+         Gyro.Get_Raw_Angle_Rates (Axes);
+         LCD_Std_Out.Put (60, 0, Axes.X'Img & "  ");
+         LCD_Std_Out.Put (120, 0, Axes.Y'Img & "  ");
+         LCD_Std_Out.Put (180, 0, Axes.Z'Img & "  ");
+         Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
+         Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
+         Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
+         Last_Axes := Axes;
+      end loop;
+   end collect_entropy;
+end entropy_generator_gyro;

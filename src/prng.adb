@@ -8,22 +8,30 @@ with LCD_Std_Out; use LCD_Std_Out;
 
 package body prng is
 
-   procedure Feed (Entropy : Integer) is
+   function Feed (Entropy : Integer) return Integer is
+      Actual_Entropy_Count : Integer;
+      Ignore_RT : Interfaces.C.int;
    begin
       if Entropy = Last_Integer then
-         return;
+         return Integer(get_entropy_count(Entropy_Pool_State));
       end if;
       Last_Integer := Entropy;
       mix_pool(Interfaces.C.int(Entropy), Entropy_Pool_State);
-      if Pool_Init < 16 then
+      if Pool_Init < 32 then
          Pool_Init := Pool_Init + 1;
          -- Allow for the PRNG to be filled with initial values before considering increasing the entropy counter
       else
-         LCD_Std_Out.Put(0, 42, Integer(credit_entropy(entropy_estimator(Interfaces.C.int(Entropy)), Entropy_Pool_State))'Img);
+         Ignore_RT := credit_entropy(entropy_estimator(Interfaces.C.int(Entropy)), Entropy_Pool_State);
       end if;
-      LCD_Std_Out.Put (0, 14, "'1 pool := " & Entropy_Pool_State.pool(1)'Img & "    ");
-      LCD_Std_Out.Put (0, 28, "Entropy := " & Entropy_Pool_State.entropy_count'Img & "    ");
+      Actual_Entropy_Count := Integer(get_entropy_count(Entropy_Pool_State));
+      LCD_Std_Out.Put (0, 14, "Entropy :=" & Actual_Entropy_Count'Img & "/" & Max_Pool_Entropy'Img);
+      return Actual_Entropy_Count;
    end Feed;
+
+      function get_entropy return Integer is
+begin
+   return Integer(get_entropy_count(Entropy_Pool_State));
+   end get_entropy;
 begin
    Entropy_Pool_State := new bn_h.entropy_pool;
    Entropy_Pool_State.i := 0;

@@ -52,7 +52,7 @@ use miller_rabin;
 with Prng;
 with Rsa;
 
-with gyro_demo;
+with entropy_generator_gyro;
 
 procedure Main
 is
@@ -98,7 +98,8 @@ begin
    LCD_Std_Out.Clear_Screen;
 
 
-   gyro_demo.Gyro_test;
+   entropy_generator_gyro.init_entropy_collector;
+   entropy_generator_gyro.collect_entropy(Prng.Max_Pool_Entropy/4);
 
    bignum_init(Big_Num_A);
    bignum_from_int(Big_Num_A, 5);

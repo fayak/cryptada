@@ -12,7 +12,12 @@ with STM32.EXTI; use STM32.EXTI;
 with LCD_Std_Out;
 
 with L3GD20;  use L3GD20;
-package gyro_demo is
 
-procedure Gyro_test ;
-end gyro_demo;
+package entropy_generator_gyro is
+procedure init_entropy_collector;
+   procedure collect_entropy(Minimum : Integer);
+
+private
+   Axes      : L3GD20.Angle_Rates;
+   Last_Axes : L3GD20.Angle_Rates;
+end entropy_generator_gyro;

@@ -6,10 +6,11 @@ with bn_h;                  use bn_h;
 
 package Prng is
    type Entropy_Pool_Access is access all entropy_pool;
-   procedure Feed (Entropy : Integer);
+   function Feed (Entropy : Integer) return Integer;
    
-   function get_entropy () return Integer;
-   
+   function get_entropy return Integer;
+  
+   Max_Pool_Entropy : Integer := POOL_SIZE * 32;
 private
    Entropy_Pool_State : Entropy_Pool_Access;
    Last_Integer : Integer := 0;

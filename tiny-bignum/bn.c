@@ -1027,3 +1027,8 @@ uint8_t get_random(struct entropy_pool *pool)
     credit_entropy(-64, pool);
     return _give_random_byte(pool);
 }
+
+uint32_t get_entropy_count(struct entropy_pool *pool)
+{
+    return pool->entropy_count >> ENTROPY_SHIFT;
+}

@@ -315,7 +315,7 @@ package bn_h is
   -- enough entropy to do so, so be advised.
   -- When it needs to extract entropy from the pool, it requires 64 bits of entropy.
   -- One must assert (pool->remaining_extracted > 0 || pool->entropy_count >= 64) before calling get_random
-   function get_random (pool : access entropy_pool) return bits_stdint_uintn_h.uint8_t  -- bn.h:152
+   function get_random (pool : access entropy_pool) return bits_stdint_uintn_h.uint8_t  -- bn.h:149
    with Import => True, 
         Convention => C, 
         External_Name => "get_random";

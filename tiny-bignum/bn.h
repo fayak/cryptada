@@ -138,10 +138,7 @@ int credit_entropy(int nb_bits, struct entropy_pool *pool);
 int entropy_estimator(int x);
 
 // Return the amount of bits of entropy in the pool
-inline uint32_t get_entropy_count(struct entropy_pool *pool)
-{
-    return pool->entropy_count >> ENTROPY_SHIFT;
-}
+uint32_t get_entropy_count(struct entropy_pool *pool);
 #define ENTROPY_COUNT(x) ((x) >> ENTROPY_SHIFT)
 
 // Extract a random byte from the entropy pool. Does not check if the pool has
