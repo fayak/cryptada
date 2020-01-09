@@ -15,7 +15,6 @@ with L3GD20; use L3GD20;
 with Prng;
 
 package body entropy_generator_gyro is
-
    procedure init_entropy_collector is
 
       Entropy_Count : Integer;
@@ -103,4 +102,13 @@ package body entropy_generator_gyro is
          Last_Axes := Axes;
       end loop;
    end collect_entropy;
+
+   task body Collect_Background_Entropy is
+   begin
+      delay 1.0;
+      entropy_generator_gyro.init_entropy_collector;
+      loop
+         collect_entropy(2048);
+      end loop;
+   end Collect_Background_Entropy;
 end entropy_generator_gyro;

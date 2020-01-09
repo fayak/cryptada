@@ -53,6 +53,7 @@ with Prng;
 with Rsa;
 
 with entropy_generator_gyro;
+with usart;
 
 procedure Main
 is
@@ -97,29 +98,29 @@ begin
    Display.Update_Layer (1, Copy_Back => True);
    LCD_Std_Out.Clear_Screen;
 
+   usart.Init_USART;
 
-   entropy_generator_gyro.init_entropy_collector;
-   entropy_generator_gyro.collect_entropy(Prng.Max_Pool_Entropy/4);
+
 
    bignum_init(Big_Num_A);
    bignum_from_int(Big_Num_A, 5);
    bignum_init(Big_Num_B);
    bignum_from_int(Big_Num_B, 21);
 
+
+
    bn_res := Rsa.Find_Mod_Inverse(Big_Num_A, Big_Num_B);
    bignum_to_string(bn_res, Buffer, STR_DEST_SIZE);
    --LCD_Std_Out.Put_Line("Find Mod Inverse : ");
    --LCD_Std_Out.Put(Interfaces.C.Strings.Value(Buffer));
 
-   LCD_Std_Out.Put_Line("Miller Rabinou time");
+   --LCD_Std_Out.Put_Line("Miller Rabinou time");
    --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
    bignum_init(Big_Num_A);
    --Prng.Random(Big_Num_A, Nb_Bit);
-   Nb_Bit := 32;
-         bignum_inc(Big_Num_A);
-
-     -- Prng.Random(Big_Num_A, Nb_Bit);
-      bignum_inc(Big_Num_A);
+   Nb_Bit := 2;
+   Prng.Random(Big_Num_A, Nb_Bit);
+   bignum_inc(Big_Num_A);
 
    for n in Natural range 0..24 loop
       --bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));

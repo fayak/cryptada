@@ -14,6 +14,8 @@ with LCD_Std_Out;
 with L3GD20;  use L3GD20;
 
 package entropy_generator_gyro is
+   pragma Elaborate_Body(entropy_generator_gyro);
+   task Collect_Background_Entropy;
 procedure init_entropy_collector;
    procedure collect_entropy(Minimum : Integer);
 
