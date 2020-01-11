@@ -10,9 +10,12 @@ package Prng is
    
    function get_entropy return Integer;
    procedure Random(N : in out Big_Num_Access; Nb_Bits : Integer);
+   procedure Random_Unsafe(N : in out Big_Num_Access; Nb_Bits : Integer);
    Max_Pool_Entropy : Integer := POOL_SIZE * 32;
 private
    Entropy_Pool_State : Entropy_Pool_Access;
    Last_Integer : Integer := 0;
    Pool_Init : Integer := 0;
+   
+   MIN_SAFE_ENTROPY : Integer := 64;
 end Prng;

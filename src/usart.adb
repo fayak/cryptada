@@ -75,10 +75,14 @@ end Get_Message;
 
    procedure Send_Message(Message : String) is
    begin
-      Set (Outgoing, To => Message & ASCII.CR & ASCII.LF);
+      Send_Message_No_CRLF(Message & ASCII.CR & ASCII.LF);
+   end Send_Message;
+   procedure Send_Message_No_CRLF(Message : String) is
+   begin
+      Set (Outgoing, To => Message);
       Peripherals.COM.Start_Sending (Outgoing'Unchecked_Access);
       Suspend_Until_True (Outgoing.Transmission_Complete);
-  end Send_Message;
+  end Send_Message_No_CRLF;
 
 procedure Init_USART is
 

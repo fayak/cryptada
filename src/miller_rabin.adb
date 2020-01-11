@@ -2,7 +2,8 @@ with bn_h;                  use bn_h;
 with Interfaces.C.Strings;
 use Interfaces.C;
 with LCD_Std_Out;
-
+with Prng;
+with usart;
 
 package body miller_rabin is
    
@@ -35,7 +36,55 @@ package body miller_rabin is
       return True;
    
    end Miller_Rabin_Witness;
+   
+   function Miller_Rabin_no_check (N : Big_Num_Access; Nb_Bits, Nb_Tests : Integer) return Boolean is
+      D : Big_Num_Access := new bn;
+      S : Big_Num_Access := new bn;
+      N_Minus, N_Minus_4, Tmp : Big_Num_Access := new bn;
+      Witness : Big_Num_Access := new bn;
+      
+      String_Base : String(1..STR_DEST_SIZE) := (others => '0');
+      Buffer : Interfaces.C.Strings.chars_ptr;
+   begin
+      Buffer := Interfaces.C.Strings.New_String(String_Base);
+      bignum_from_int(S, 0);
+      
+      bignum_sub(N, One, D);
+      bignum_mod(D, Two, Tmp);
+      while bignum_is_zero(Tmp) = 1 loop
+         bignum_rshift(D, D, 1);
+         bignum_inc(S);
+         bignum_mod(D, Two, Tmp);
+      end loop;
+      
+      bignum_sub(N, One, N_Minus);
+      bignum_sub(N_Minus, Three, N_Minus_4);
+      
+      if bignum_cmp(N, Miller_341550071728321) < 0 then
+         return not (Miller_Rabin_Witness(N, Two, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Three, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Five, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Seven, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Miller_11, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Miller_13, S, D, N_Minus) and
+                       Miller_Rabin_Witness(N, Miller_17, S, D, N_Minus)
+                    );
+      end if;
+      
+            
+      for i in 1..Nb_Tests loop
+         Prng.Random_Unsafe(Witness, Nb_Bits + Nb_Bits / 2);
+         bignum_mod(Witness, N_Minus_4, Tmp);
+         bignum_add(Tmp, Two, Witness);
+         
+         if Miller_Rabin_Witness(N, Witness, S, D, N_Minus) then
+            return False;
+         end if;
 
+      end loop;
+      return True;
+   end Miller_Rabin_no_check;
+   
    function Miller_Rabin_p (N : Big_Num_Access) return Boolean is
       D : Big_Num_Access := new bn;
       S : Big_Num_Access := new bn;
@@ -44,12 +93,7 @@ package body miller_rabin is
       I : Big_Num_Access := new bn;
       
       Tmp, Tmp2 : Big_Num_Access := new bn;
-      String_Base : String(1..STR_DEST_SIZE) := (others => '0');
-      Buffer : Interfaces.C.Strings.chars_ptr;
-   begin
-      Buffer := Interfaces.C.Strings.New_String(String_Base);
-      bignum_init(Tmp);
-      
+   begin      
       if bignum_cmp(N, One) = 0 or bignum_cmp(N, Two) = 0 or bignum_cmp(N, Three) = 0 then
          return True;
       end if;

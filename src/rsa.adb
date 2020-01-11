@@ -7,6 +7,7 @@ with Prng;
 with miller_rabin;
 with LCD_Std_Out;
 with usart;
+with prime;
 
 package body rsa is
 
@@ -149,33 +150,26 @@ package body rsa is
       Buffer := Interfaces.C.Strings.New_String(String_Base);
       LCD_Std_Out.Put(0, 42, "RSA: Init");
       usart.Send_Message("RSA: Init");
-      loop
-         Prng.Random(p, Nb_Bits);
-         LCD_Std_Out.Put(0, 42, "RSA: Finding p");
-         bignum_mod(p, Two, Tmp);
-         if bignum_is_zero(Tmp) = 1 then
-            bignum_inc(p);
-         end if;
-         exit when miller_rabin.Miller_Rabin_p(p);
-      end loop;
-      loop
-         Prng.Random(q, Nb_Bits);
-         LCD_Std_Out.Put(0, 56, "RSA: Finding q");
-         bignum_mod(q, Two, Tmp);
-         if bignum_is_zero(Tmp) = 1 then
-            bignum_inc(q);
-         end if;
-         exit when miller_rabin.Miller_Rabin_p(q);
-      end loop;
+      
+      LCD_Std_Out.Put(0, 42, "RSA: Finding p");
+      prime.Give_Prime_Number(p, Nb_Bits);
+      LCD_Std_Out.Put(0, 56, "RSA: Finding q");
+      prime.Give_Prime_Number(q, Nb_Bits);
+      usart.Send_Message("");
+      
       LCD_Std_Out.Put(0, 70, "RSA: Computing priv.");
       bignum_mul(p, q, n);
-      bignum_from_int(e, 65537);
+      -- FIXME : chose either 65537 or 3
+      
+      --bignum_from_int(e, 65537);
+      bignum_from_int(e, 3);
       
       bignum_sub(p, One, pm1);
       bignum_sub(q, One, pm2);
       bignum_mul(pm1, pm2, pm1_qm1);
       d := Find_Mod_Inverse(e, pm1_qm1);
       Print_UART_ASN1_Conf(n, d, e, p, q, pm1, pm2);
+      LCD_Std_Out.Put(0, 70, "RSA: done !        ");
    end Gen_RSA;
 
 end rsa;

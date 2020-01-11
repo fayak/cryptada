@@ -72,8 +72,6 @@ is
 begin
    Buffer := Interfaces.C.Strings.New_String(String_Base);
 
-   bignum_init(Big_Num_A);
-
    --  Initialize LCD
    Display.Initialize;
    Display.Initialize_Layer (1, ARGB_8888);
@@ -97,28 +95,7 @@ begin
 
    usart.Init_USART;
 
-
-
-   bignum_init(Big_Num_A);
-   bignum_from_int(Big_Num_A, 5);
-      bignum_from_int(A, 5);
-
-   bignum_init(Big_Num_B);
-   bignum_from_int(Big_Num_B, 21);
-        bignum_from_int(B, 21);
-
-
-
-   bn_res := Rsa.Find_Mod_Inverse(Big_Num_A, Big_Num_B);
-   bignum_to_string(bn_res, Buffer, STR_DEST_SIZE);
-
-   --LCD_Std_Out.Put_Line("Miller Rabinou time");
-   --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
-   bignum_init(Big_Num_A);
-
-   Nb_Bit := 2;
-
-   rsa.Gen_RSA(40, n, d, e);
+   rsa.Gen_RSA(256, n, d, e);
    loop
       delay 1.0;
    end loop;

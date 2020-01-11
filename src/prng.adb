@@ -35,7 +35,7 @@ begin
    return Integer(get_entropy_count(Entropy_Pool_State));
    end get_entropy;
 
-   procedure Random(N : in out Big_Num_Access; Nb_Bits : Integer) is
+   procedure Random_Internal(N : in out Big_Num_Access; Nb_Bits : Integer; Min_Entropy : Integer) is
       Nb_Bits_Work : Integer;
       Work_Byte : Integer := 0;
       Work_BN, Tmp_BN : Big_Num_Access := new bn;
@@ -45,7 +45,7 @@ begin
       bignum_from_int(N, 0);
       Nb_Bits_Work := Nb_Bits;
       while Nb_Bits_Work > 0 loop
-         while get_entropy < 1 and Entropy_Pool_State.remaining_extracted = 0 loop
+         while get_entropy < Min_Entropy and Entropy_Pool_State.remaining_extracted = 0 loop
             delay 0.1;
             LCD_Std_Out.Put (0, 28, "Wait. for more entr.");
          end loop;
@@ -65,8 +65,15 @@ begin
       Buffer := Interfaces.C.Strings.New_String(String_Base);
       bignum_to_string(N, Buffer, STR_DEST_SIZE);
       LCD_Std_Out.Put(0, 28, "Done: " & Interfaces.C.Strings.Value(Buffer) & "          ");
+   end Random_Internal;
+   procedure Random(N : in out Big_Num_Access; Nb_Bits : Integer) is
+   begin
+      Random_Internal(N, Nb_Bits, MIN_SAFE_ENTROPY);
    end Random;
-
+   procedure Random_Unsafe(N : in out Big_Num_Access; Nb_Bits : Integer) is
+   begin
+      Random_Internal(N, Nb_Bits, -1);
+   end Random_Unsafe;
 begin
    Entropy_Pool_State := new bn_h.entropy_pool;
    Entropy_Pool_State.i := 0;

@@ -15,6 +15,9 @@ package Bignum is
    Miller_11 : Big_Num_Access := new bn;
    Miller_13 : Big_Num_Access := new bn;
    Miller_17 : Big_Num_Access := new bn;
+   Miller_19 : Big_Num_Access := new bn;
+   Miller_23 : Big_Num_Access := new bn;
+   Miller_29 : Big_Num_Access := new bn;
    Miller_31 : Big_Num_Access := new bn;
    Miller_73 : Big_Num_Access := new bn;
    Miller_2047 : Big_Num_Access := new bn;
