@@ -532,7 +532,15 @@ void bignum_mod(struct bn* a, struct bn* b, struct bn* c)
 
     struct bn tmp = { 0 };
     bignum_init(c);
-
+    if (a->neg)
+    {
+        while (a->neg)
+        {
+            bignum_add(a, b, c);
+            bignum_assign(a, c);
+        }
+        return;
+    }
     _bignum_div(a, b, &tmp, c);
 }
 

@@ -13,7 +13,7 @@ package bn_h is
    --  arg-macro: procedure unlikely (x)
    --    __builtin_expect(notnot(x), 0)
    BN_ARRAY_SIZE : constant := 64;  --  bn.h:30
-   STR_DEST_SIZE : constant := 32;  --  bn.h:31
+   STR_DEST_SIZE : constant := 128;  --  bn.h:31
    --  unsupported macro: require(p,msg) assert(p && #msg)
 
    BASE : constant := 256;  --  bn.h:35

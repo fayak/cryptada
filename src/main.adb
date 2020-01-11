@@ -59,11 +59,8 @@ procedure Main
 is
 
 
-   Big_Num_A, Big_Num_B, n, d ,e : Big_Num_Access := new bn;
+   Big_Num_A, Big_Num_B, A, B, C, n, d ,e : Big_Num_Access := new bn;
    bn_res : Big_Num_Access := null;
-
-   Test : Boolean;
-
 
    BG : Bitmap_Color := (Alpha => 255, others => 0);
    Board_Size : Point := (240, 320);
@@ -104,15 +101,16 @@ begin
 
    bignum_init(Big_Num_A);
    bignum_from_int(Big_Num_A, 5);
+      bignum_from_int(A, 5);
+
    bignum_init(Big_Num_B);
    bignum_from_int(Big_Num_B, 21);
+        bignum_from_int(B, 21);
 
 
 
    bn_res := Rsa.Find_Mod_Inverse(Big_Num_A, Big_Num_B);
    bignum_to_string(bn_res, Buffer, STR_DEST_SIZE);
-   --LCD_Std_Out.Put_Line("Find Mod Inverse : ");
-   --LCD_Std_Out.Put(Interfaces.C.Strings.Value(Buffer));
 
    --LCD_Std_Out.Put_Line("Miller Rabinou time");
    --LCD_Std_Out.Put_Line(Interfaces.C.Strings.Value(Res));
@@ -120,28 +118,10 @@ begin
 
    Nb_Bit := 2;
 
-   rsa.Gen_RSA(32, n, d, e);
+   rsa.Gen_RSA(40, n, d, e);
    loop
-      null;
+      delay 1.0;
    end loop;
 
-   for n in Natural range 0..24 loop
-      --bignum_from_int(Big_Num_A, Interfaces.C.unsigned(n));
-      bignum_inc(Big_Num_A);
-      bignum_inc(Big_Num_A);
-      --LCD_Std_Out.Put(n'Image);
-      bignum_to_string(Big_Num_A, Buffer, STR_DEST_SIZE);
-      LCD_Std_Out.Put(Interfaces.C.Strings.Value(Buffer));
-      LCD_Std_Out.Put(":=");
-      Test := Miller_Rabin_p(Big_Num_A);
-      if Test then
-         LCD_Std_Out.Put_Line("Prim");
-      else
-         LCD_Std_Out.Put_Line("Comp");
-      end if;
-   end loop;
-   loop
-         Display.Update_Layer (1, Copy_Back => True);
-   end loop;
 
 end Main;
