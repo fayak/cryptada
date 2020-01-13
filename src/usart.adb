@@ -56,6 +56,7 @@ with Ada.Strings.Unbounded;
 package body usart is
 
    Outgoing : aliased Message (Physical_Size => 2048);
+   Mutex : Mutual_Exclusion;
 
 procedure Get_Message(Message_Final : in out Ada.Strings.Unbounded.Unbounded_String) is
       Received : aliased Message (Physical_Size => 1024);
@@ -79,9 +80,11 @@ end Get_Message;
    end Send_Message;
    procedure Send_Message_No_CRLF(Message : String) is
    begin
+      Mutex.Seize;
       Set (Outgoing, To => Message);
       Peripherals.COM.Start_Sending (Outgoing'Unchecked_Access);
       Suspend_Until_True (Outgoing.Transmission_Complete);
+      Mutex.Release;
   end Send_Message_No_CRLF;
 
 procedure Init_USART is

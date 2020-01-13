@@ -14,6 +14,8 @@ with LCD_Std_Out;
 with L3GD20; use L3GD20;
 with Prng;
 
+with display; use display;
+
 package body entropy_generator_gyro is
    procedure init_entropy_collector is
 
@@ -72,14 +74,14 @@ package body entropy_generator_gyro is
       Configure_Gyro_Interrupt;
 
       Gyro.Set_FIFO_Mode (L3GD20_Stream_Mode);
-      LCD_Std_Out.Put (0, 0, "X/Y/Z");
+      Print (Axis_Raw_Values, "X/Y/Z", Send_USART => False);
       Gyro.Get_Raw_Angle_Rates (Last_Axes);
       Entropy_Count := 0;
       while Entropy_Count < Prng.Max_Pool_Entropy / 16 loop
          Gyro.Get_Raw_Angle_Rates (Axes);
-         LCD_Std_Out.Put (60, 0, Axes.X'Img & "  ");
-         LCD_Std_Out.Put (120, 0, Axes.Y'Img & "  ");
-         LCD_Std_Out.Put (180, 0, Axes.Z'Img & "  ");
+         Print(Axis_Raw_Values, Axes.X'Img & "  ", Send_USART => False, col => 60);
+         Print(Axis_Raw_Values, Axes.Y'Img & "  ", Send_USART => False, col => 120);
+         Print(Axis_Raw_Values, Axes.Z'Img & "  ", Send_USART => False, col => 180);
          Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
@@ -93,9 +95,9 @@ package body entropy_generator_gyro is
       Entropy_Count := 0;
       while Entropy_Count < Minimum loop
          Gyro.Get_Raw_Angle_Rates (Axes);
-         LCD_Std_Out.Put (60, 0, Axes.X'Img & "  ");
-         LCD_Std_Out.Put (120, 0, Axes.Y'Img & "  ");
-         LCD_Std_Out.Put (180, 0, Axes.Z'Img & "  ");
+         Print(Axis_Raw_Values, Axes.X'Img & "  ", Send_USART => False, col => 60);
+         Print(Axis_Raw_Values, Axes.Y'Img & "  ", Send_USART => False, col => 120);
+         Print(Axis_Raw_Values, Axes.Z'Img & "  ", Send_USART => False, col => 180);
          Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));

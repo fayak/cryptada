@@ -54,6 +54,8 @@ with Rsa;
 
 with entropy_generator_gyro;
 with usart;
+with Ada.Exceptions; use Ada.Exceptions;
+
 
 procedure Main
 is
@@ -95,7 +97,8 @@ begin
 
    usart.Init_USART;
 
-   rsa.Gen_RSA(256, n, d, e);
+   rsa.Gen_RSA(512, n, d, e);
+
    loop
       delay 1.0;
    end loop;

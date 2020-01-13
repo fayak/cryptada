@@ -12,8 +12,8 @@ package bn_h is
    --    __builtin_expect(notnot(x), 1)
    --  arg-macro: procedure unlikely (x)
    --    __builtin_expect(notnot(x), 0)
-   BN_ARRAY_SIZE : constant := 128;  --  bn.h:30
-   STR_DEST_SIZE : constant := 128;  --  bn.h:31
+   BN_ARRAY_SIZE : constant := 256;  --  bn.h:30
+   STR_DEST_SIZE : constant := 256;  --  bn.h:31
    --  unsupported macro: require(p,msg) assert(p && #msg)
 
    BASE : constant := 256;  --  bn.h:35
@@ -43,7 +43,7 @@ package bn_h is
 
   -- Custom assert macro - easy to disable  
   -- Data-holding structure: array of DTYPEs  
-   type anon887_c_array_array is array (0 .. 127) of aliased bits_stdint_uintn_h.uint8_t;
+   type anon887_c_array_array is array (0 .. 255) of aliased bits_stdint_uintn_h.uint8_t;
    type bn is record
       c_array : aliased anon887_c_array_array;  -- bn.h:42
       size : aliased bits_stdint_uintn_h.uint32_t;  -- bn.h:43

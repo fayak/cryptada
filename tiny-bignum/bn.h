@@ -27,8 +27,8 @@ There may well be room for performance-optimizations and improvements.
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
-#define BN_ARRAY_SIZE    128
-#define STR_DEST_SIZE    128
+#define BN_ARRAY_SIZE    256
+#define STR_DEST_SIZE    256
 /* Custom assert macro - easy to disable */
 #define require(p, msg) assert(p && #msg)
 

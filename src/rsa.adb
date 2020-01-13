@@ -8,6 +8,8 @@ with miller_rabin;
 with LCD_Std_Out;
 with usart;
 with prime;
+with display;
+use display;
 
 package body rsa is
 
@@ -42,9 +44,8 @@ package body rsa is
       tmp2, q : Big_Num_Access := null;
       res : Big_Num_Access := null;
       
-      
-      String_Base : String(1..STR_DEST_SIZE) := (others => '0');
       Buffer : Interfaces.C.Strings.chars_ptr;
+      String_Base : String(1..STR_DEST_SIZE) := (others => '0');
    begin
       Buffer := Interfaces.C.Strings.New_String(String_Base);
       
@@ -94,7 +95,7 @@ package body rsa is
          bignum_assign(v3, tmp2);
       end loop;
       res := new bn;
-      
+
       bignum_mod(u1, m, res);
       
       Free_Bignum(tmp1);
@@ -114,25 +115,25 @@ package body rsa is
       Buffer : Interfaces.C.Strings.chars_ptr;
       String_Base : String(1..STR_DEST_SIZE) := (others => '0');
    begin
-      bignum_mod(d, pm1, e1);
-      bignum_mod(d, qm1, e2);
-      coeff := Find_Mod_Inverse(q, p);
-
       Buffer := Interfaces.C.Strings.New_String(String_Base);
       usart.Send_Message("asn1=SEQUENCE:rsa_key");
       usart.Send_Message("");
       usart.Send_Message("[rsa_key]");
       usart.Send_Message("version=INTEGER:0");
       bignum_to_string(n, Buffer, STR_DEST_SIZE);
-      usart.Send_Message("modulus=INTEGER:" & Interfaces.C.Strings.Value(Buffer)); 
+      usart.Send_Message("modulus=INTEGER:" & Interfaces.C.Strings.Value(Buffer));
       bignum_to_string(e, Buffer, STR_DEST_SIZE);
-      usart.Send_Message("pubExp=INTEGER:" & Interfaces.C.Strings.Value(Buffer)); 
+      usart.Send_Message("pubExp=INTEGER:" & Interfaces.C.Strings.Value(Buffer));
       bignum_to_string(d, Buffer, STR_DEST_SIZE);
-      usart.Send_Message("privExp=INTEGER:" & Interfaces.C.Strings.Value(Buffer)); 
+      usart.Send_Message("privExp=INTEGER:" & Interfaces.C.Strings.Value(Buffer));
       bignum_to_string(p, Buffer, STR_DEST_SIZE);
       usart.Send_Message("p=INTEGER:" & Interfaces.C.Strings.Value(Buffer)); 
       bignum_to_string(q, Buffer, STR_DEST_SIZE);
       usart.Send_Message("q=INTEGER:" & Interfaces.C.Strings.Value(Buffer));
+      bignum_mod(d, pm1, e1);
+      bignum_mod(d, qm1, e2);
+      coeff := Find_Mod_Inverse(q, p);
+
       bignum_to_string(e1, Buffer, STR_DEST_SIZE);
       usart.Send_Message("e1=INTEGER:" & Interfaces.C.Strings.Value(Buffer)); 
       bignum_to_string(e2, Buffer, STR_DEST_SIZE);
@@ -148,28 +149,31 @@ package body rsa is
       Buffer : Interfaces.C.Strings.chars_ptr;
    begin
       Buffer := Interfaces.C.Strings.New_String(String_Base);
-      LCD_Std_Out.Put(0, 42, "RSA: Init");
-      usart.Send_Message("RSA: Init");
+      Print(RSA_1, "RSA(" & Nb_Bits'Image & "bits)");
+      Print(RSA_2, "RSA: Finding p");
+      prime.Give_Prime_Number(p, (Nb_Bits / 2) + 1);
+      Print(RSA_3, "RSA: Finding q");
+      prime.Give_Prime_Number(q, (Nb_Bits / 2) + 1);
       
-      LCD_Std_Out.Put(0, 42, "RSA: Finding p");
-      prime.Give_Prime_Number(p, Nb_Bits);
-      LCD_Std_Out.Put(0, 56, "RSA: Finding q");
-      prime.Give_Prime_Number(q, Nb_Bits);
-      usart.Send_Message("");
-      
-      LCD_Std_Out.Put(0, 70, "RSA: Computing priv.");
+      Print(RSA_4, "RSA: Computing priv.");
       bignum_mul(p, q, n);
       -- FIXME : chose either 65537 or 3
       
       --bignum_from_int(e, 65537);
-      bignum_from_int(e, 3);
-      
       bignum_sub(p, One, pm1);
       bignum_sub(q, One, pm2);
       bignum_mul(pm1, pm2, pm1_qm1);
-      d := Find_Mod_Inverse(e, pm1_qm1);
+      Print(RSA_4, "RSA: Computing D");
+      
+      for i in prime.First_Fermat'Range loop
+        bignum_assign(e, prime.First_Fermat(i));
+        d := Find_Mod_Inverse(e, pm1_qm1);
+        exit when d /= null;
+      end loop;
+
+      Print(RSA_4, "RSA: Printing things");
       Print_UART_ASN1_Conf(n, d, e, p, q, pm1, pm2);
-      LCD_Std_Out.Put(0, 70, "RSA: done !        ");
+      Print(RSA_4, "RSA: done !        ");
    end Gen_RSA;
 
 end rsa;

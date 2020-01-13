@@ -6,6 +6,7 @@ with bn_h;                  use bn_h;
 with LCD_Std_Out; use LCD_Std_Out;
 with Interfaces.C.Strings;
 with bits_stdint_uintn_h;
+with display; use display;
 
 
 package body prng is
@@ -26,7 +27,7 @@ package body prng is
          Ignore_RT := credit_entropy(entropy_estimator(Interfaces.C.int(Entropy)), Entropy_Pool_State);
       end if;
       Actual_Entropy_Count := Integer(get_entropy_count(Entropy_Pool_State));
-      LCD_Std_Out.Put (0, 14, "Entropy :=" & Actual_Entropy_Count'Img & "/" & Max_Pool_Entropy'Img);
+      Print(Entropy_Counter, "Entropy :=" & Actual_Entropy_Count'Img & "/" & Max_Pool_Entropy'Img, False);
       return Actual_Entropy_Count;
    end Feed;
 
@@ -47,9 +48,9 @@ begin
       while Nb_Bits_Work > 0 loop
          while get_entropy < Min_Entropy and Entropy_Pool_State.remaining_extracted = 0 loop
             delay 0.1;
-            LCD_Std_Out.Put (0, 28, "Wait. for more entr.");
+            Print(Random_Generator_Status, "Wait. for more entr.", False);
          end loop;
-         LCD_Std_Out.Put (0, 28,    "Creat. random number");
+         Print(Random_Generator_Status, "Creat. random number", False);
          Work_Byte := Integer(get_random(Entropy_Pool_State));
          bignum_from_int(Work_BN, Interfaces.C.Int(Work_Byte));
          bignum_lshift(N, Tmp_BN, 8);
@@ -64,7 +65,7 @@ begin
       end loop;
       Buffer := Interfaces.C.Strings.New_String(String_Base);
       bignum_to_string(N, Buffer, STR_DEST_SIZE);
-      LCD_Std_Out.Put(0, 28, "Done: " & Interfaces.C.Strings.Value(Buffer) & "          ");
+      Print(Random_Generator_Status, "Done: " & Interfaces.C.Strings.Value(Buffer) & "          ", False);
    end Random_Internal;
    procedure Random(N : in out Big_Num_Access; Nb_Bits : Integer) is
    begin

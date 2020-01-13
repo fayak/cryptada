@@ -1,4 +1,5 @@
 with Ada.Strings.Unbounded;
+with GNAT.Semaphores; use GNAT.Semaphores;
 
 package usart is
 
@@ -7,4 +8,8 @@ package usart is
    procedure Send_Message(Message : String);
    procedure Send_Message_No_CRLF(Message : String);
 
+   subtype Mutual_Exclusion is Binary_Semaphore
+    (Initially_Available => True,
+     Ceiling             => Default_Ceiling);
+   col : Integer;
 end usart;
