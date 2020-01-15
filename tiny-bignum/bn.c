@@ -407,8 +407,6 @@ void bignum_inc(struct bn* n)
     remove_zeros(n);
 }
 
-#define KARATSUBA_MIN 6
-
 void split_at(struct bn* a, uint32_t low, uint32_t top, struct bn* res)
 {
     uint32_t max = top < a->size ? top : a->size;
@@ -840,15 +838,15 @@ void bignum_pow(struct bn* a, struct bn* b, struct bn* c)
 //    bignum_rshift(&high, &mid, 1);
 //    bignum_inc(&mid);
 //
-//    while (bignum_cmp(&high, &low) > 0) 
+//    while (bignum_cmp(&high, &low) > 0)
 //    {
 //        bignum_mul(&mid, &mid, &tmp);
-//        if (bignum_cmp(&tmp, a) > 0) 
+//        if (bignum_cmp(&tmp, a) > 0)
 //        {
 //            bignum_assign(&high, &mid);
 //            bignum_dec(&high);
 //        }
-//        else 
+//        else
 //        {
 //            bignum_assign(&low, &mid);
 //        }

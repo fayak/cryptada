@@ -1,5 +1,9 @@
 #ifndef __BIGNUM_H__
 #define __BIGNUM_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
 
 Big number library - arithmetic on multiple-precision unsigned integers.
@@ -23,7 +27,6 @@ There may well be room for performance-optimizations and improvements.
 #include <stdint.h>
 #include <assert.h>
 
-
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
@@ -36,6 +39,8 @@ There may well be room for performance-optimizations and improvements.
 #define BASE 256
 #define WORD_SIZE 8
 #define WORD_MASK 0xff
+
+static uint8_t KARATSUBA_MIN = 6;
 
 /* Data-holding structure: array of DTYPEs */
 struct bn
@@ -149,5 +154,9 @@ uint32_t get_entropy_count(struct entropy_pool *pool);
 // When it needs to extract entropy from the pool, it requires 64 bits of entropy.
 // One must assert (pool->remaining_extracted > 0 || pool->entropy_count >= 64) before calling get_random
 uint8_t get_random(struct entropy_pool *pool);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* #ifndef __BIGNUM_H__ */

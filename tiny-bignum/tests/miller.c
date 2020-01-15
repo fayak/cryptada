@@ -1,20 +1,11 @@
 #include "bn.h"
+#include "miller.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-typedef struct bn* BN;
-#define true 1
-#define false 0
-
-struct bn one;
-struct bn two;
-struct bn three;
-BN One;
-BN Two;
-BN Three;
-
-char buffer[128] = {0};
+static char buffer[128] = {0};
 
 int miller_rabin_witness(BN n, BN s, BN a, BN d, BN n_minus)
 {
@@ -81,7 +72,6 @@ int miller_rabin(BN N, int Nb_Bits, int Nb_Tests)
 
       for (int i = 0; i < Nb_Tests; ++i)
       {
-          printf("ok %d\n", i);
           bignum_init(Witness);
           for (int j = 0; j < Nb_Bits + Nb_Bits / 2; j += 3)
           {
@@ -98,20 +88,4 @@ int miller_rabin(BN N, int Nb_Bits, int Nb_Tests)
 
       }
       return true;
-}
-
-int main(void)
-{
-    bignum_from_int(&one, 1);
-    bignum_from_int(&two, 2);
-    bignum_from_int(&three, 3);
-    One = &one;
-    Two = &two;
-    Three = &three;
-    srand(time(NULL));
-    struct bn n;
-    char buf[] = "10408607522886163411192465147334015174325017901510787091895957152987142017285554278418896457181559830763141008389583920790601819085885688670689286888080297";
-    int nb = sizeof(buf) - 1;
-    bignum_from_string(&n, buf, nb);
-    printf("%d - %d\n", miller_rabin(&n, nb, 10), nb);
 }
