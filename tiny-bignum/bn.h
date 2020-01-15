@@ -27,6 +27,7 @@ There may well be room for performance-optimizations and improvements.
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
+// MUST BE % 4 !
 #define BN_ARRAY_SIZE    256
 #define STR_DEST_SIZE    256
 /* Custom assert macro - easy to disable */
@@ -78,6 +79,7 @@ void bignum_dec(struct bn* n);                             /* Decrement: subtrac
 void bignum_pow(struct bn* a, struct bn* b, struct bn* c); /* Calculate a^b -- e.g. 2^10 => 1024 */
 //    void bignum_isqrt(struct bn* a, struct bn* b);             /* Integer square root -- e.g. isqrt(5) => 2*/
 void bignum_assign(struct bn* dst, struct bn* src);        /* Copy src into dst -- dst := src */
+
 
 uint32_t bignum_nb_bits(struct bn* n);
 

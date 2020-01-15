@@ -1,9 +1,10 @@
 CC     := gcc
 MACROS := 
-SANITIZE := -fsanitize=address
+#SANITIZE := -fsanitize=address
+SANITIZE :=
 #VALGRIND := valgrind
-CFLAGS := -I. -Wundef -Wall -Wextra -O3
-CFLAGS_TEST := -I. -Wundef -Wall -Wextra -g $(SANITIZE)
+CFLAGS := -I. -Wundef -Wall -Wextra -O2
+CFLAGS_TEST := -I. -Wundef -Wall -Wextra -g -O2
 
 all:
 	@$(CC) $(CFLAGS_TEST) bn.c ./tests/bn_convertion.c  -o ./test_bn

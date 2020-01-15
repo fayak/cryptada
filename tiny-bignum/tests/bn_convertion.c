@@ -310,6 +310,7 @@ void test_add(void)
     struct bn a;
     struct bn b;
     struct bn c;
+    memset(&c, 0xFF, sizeof(struct bn));
     bignum_from_int(&a, 12357);
     bignum_from_int(&b,  9999);
     bignum_add(&a, &b, &c);
@@ -317,6 +318,7 @@ void test_add(void)
     bignum_add(&b, &a, &c);
     assert(bignum_to_int(&c) == 22356);
 
+    memset(&c, 0xFF, sizeof(struct bn));
     bignum_from_int(&a, -12357);
     bignum_from_int(&b,  -9999);
     bignum_add(&a, &b, &c);
@@ -324,6 +326,7 @@ void test_add(void)
     bignum_add(&b, &a, &c);
     assert(bignum_to_int(&c) == -22356);
 
+    memset(&c, 0xFF, sizeof(struct bn));
     bignum_from_int(&a, 12357);
     bignum_from_int(&b,  -9999);
     bignum_add(&a, &b, &c);
@@ -331,6 +334,7 @@ void test_add(void)
     bignum_add(&b, &a, &c);
     assert(bignum_to_int(&c) == 2358);
 
+    memset(&c, 0xFF, sizeof(struct bn));
     bignum_from_int(&a, -12357);
     bignum_from_int(&b,  9999);
     bignum_add(&a, &b, &c);
@@ -338,6 +342,7 @@ void test_add(void)
     bignum_add(&b, &a, &c);
     assert(bignum_to_int(&c) == -2358);
 
+    memset(&c, 0xFF, sizeof(struct bn));
     bignum_from_int(&a, 0);
     bignum_from_int(&b,  9999);
     bignum_add(&a, &b, &c);
@@ -345,6 +350,23 @@ void test_add(void)
     bignum_add(&b, &a, &c);
     assert(bignum_to_int(&c) == 9999);
 
+    memset(&c, 0xFF, sizeof(struct bn));
+    bignum_from_int(&a, 255);
+    bignum_from_int(&b,  255);
+    bignum_add(&a, &b, &c);
+    assert(bignum_to_int(&c) == 510);
+
+    memset(&c, 0xFF, sizeof(struct bn));
+    bignum_from_int(&a, 256);
+    bignum_from_int(&b,  255);
+    bignum_add(&a, &b, &c);
+    assert(bignum_to_int(&c) == 511);
+
+    memset(&c, 0xFF, sizeof(struct bn));
+    bignum_from_int(&a, 511);
+    bignum_from_int(&b,  511);
+    bignum_add(&a, &b, &c);
+    assert(bignum_to_int(&c) == 1022);
     AFTER;
 }
 
@@ -354,6 +376,7 @@ void test_mul(void)
     struct bn a;
     struct bn b;
     struct bn c;
+
     bignum_from_int(&a, 12357);
     bignum_from_int(&b,  9999);
     bignum_mul(&a, &b, &c);
@@ -389,6 +412,12 @@ void test_mul(void)
     bignum_mul(&b, &a, &c);
     assert(bignum_to_int(&c) == 0);
 
+    char pute[128] = {0};
+    bignum_from_string(&a, "123456789123456789", 18);
+    bignum_from_string(&b, "987654321987654321", 18);
+    bignum_mul(&a, &b, &c);
+    bignum_to_string(&c, pute, 128);
+    assert(strcmp(pute, "121932631356500531347203169112635269") == 0);
     AFTER;
 }
 

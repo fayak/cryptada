@@ -23,6 +23,13 @@
 #include <assert.h>
 #include "bn.h"
 
+#ifdef _ARM_M4
+    #include "cmsis_gcc.h"
+#endif
+
+/* Internal functions not to be exposed */
+static void _bignum_assign(struct bn* dst, struct bn* src);        /* Copy src into dst -- dst := src */
+
 /* Functions for shifting number in-place. */
 static void _lshift_one_bit(struct bn* a);
 static void _rshift_one_bit(struct bn* a);
@@ -32,10 +39,19 @@ static void _rshift_word(struct bn* a, uint32_t nwords);
 /* Array and bignum getter/setter helper */
 #define ARRAY_TAIL(array, size, offset) ((array)[(size) - (offset) - 1])
 #define BIGNUM_TAIL(bn, offset) (ARRAY_TAIL(((bn)->array), (BN_ARRAY_SIZE), (offset)))
-static void bignum_push(struct bn *n, uint8_t val)
+static inline void bignum_push(struct bn *n, uint8_t val)
 {
     if (n->size < BN_ARRAY_SIZE)
         BIGNUM_TAIL(n, n->size++) = val;
+}
+
+static inline void bignum_push_no_check(struct bn *n, uint8_t val)
+{
+    BIGNUM_TAIL(n, n->size++) = val;
+}
+static inline void bignum_push_no_check_offset(struct bn *n, uint8_t val, uint32_t offset)
+{
+    BIGNUM_TAIL(n, offset) = val;
 }
 
 /* Public / Exported functions. */
@@ -44,9 +60,10 @@ void bignum_init(struct bn* n)
     require(n, "n is null");
 
     uint32_t i;
-    for (i = 0; i < BN_ARRAY_SIZE; ++i)
+    uint32_t *array = (void *)n->array;
+    for (i = 0; i < BN_ARRAY_SIZE / 4; ++i)
     {
-        n->array[i] = 0;
+        array[i] = 0;
     }
     n->size = 0;
     n->neg = 0;
@@ -162,7 +179,7 @@ void bignum_to_string(struct bn* n, char* str, uint32_t nbytes)
     struct bn ten = { 0 };
     struct bn res = { 0 };
     bignum_from_int(&ten, 10);
-    bignum_assign(&tmp, n);
+    _bignum_assign(&tmp, n);
 
     tmp.neg = 0;
 
@@ -173,7 +190,7 @@ void bignum_to_string(struct bn* n, char* str, uint32_t nbytes)
          bignum_mod(&tmp, &ten, &res);
          ARRAY_TAIL(str, nbytes, i++) = bignum_to_int(&res) + '0';
          bignum_div(&tmp, &ten, &res);
-         bignum_assign(&tmp, &res);
+         _bignum_assign(&tmp, &res);
      }
 
     if (!bignum_is_zero(&tmp))
@@ -230,7 +247,6 @@ void bignum_dec(struct bn* n)
     remove_zeros(n);
 }
 
-
 void bignum_add(struct bn* a, struct bn* b, struct bn* c)
 {
     require(a, "a is null");
@@ -242,7 +258,7 @@ void bignum_add(struct bn* a, struct bn* b, struct bn* c)
         bignum_add(b, a, c);
         return;
     }
-    if (!a->neg && b->neg) // a + (-b) -> a - b
+    if (unlikely(!a->neg && b->neg)) // a + (-b) -> a - b
     {
         b->neg = 0;
         bignum_sub(a, b, c);
@@ -250,6 +266,8 @@ void bignum_add(struct bn* a, struct bn* b, struct bn* c)
         return;
     }
 
+    c->size = 0;
+    c->neg = 0;
     bignum_init(c);
 
     int32_t tmp;
@@ -261,9 +279,9 @@ void bignum_add(struct bn* a, struct bn* b, struct bn* c)
         tmp = BIGNUM_TAIL(a, i) + BIGNUM_TAIL(b, i) + carry;
         carry = tmp >= BASE;
         if (unlikely(carry)) // 45% des cas
-            bignum_push(c, tmp - BASE);
+            bignum_push_no_check(c, tmp - BASE);
         else
-            bignum_push(c, tmp);
+            bignum_push_no_check(c, tmp);
     }
     if (carry)
         bignum_push(c, 1);
@@ -309,7 +327,7 @@ void bignum_sub(struct bn* a, struct bn* b, struct bn* c)
 
     if (unlikely(bignum_is_zero(b)))
     {
-        bignum_assign(c, a);
+        _bignum_assign(c, a);
         return;
     }
     if (unlikely(a->neg != b->neg))
@@ -389,9 +407,125 @@ void bignum_inc(struct bn* n)
     remove_zeros(n);
 }
 
+#define KARATSUBA_MIN 6
+
+void split_at(struct bn* a, uint32_t low, uint32_t top, struct bn* res)
+{
+    uint32_t max = top < a->size ? top : a->size;
+    for (uint32_t i = low; i < max; ++i)
+    {
+        bignum_push_no_check(res, BIGNUM_TAIL(a, i));
+    }
+}
+
+void karatsuba(struct bn* a, struct bn* b, struct bn* c)
+{
+    if (a->size < KARATSUBA_MIN || b->size < KARATSUBA_MIN)
+    {
+        bignum_mul(a, b, c);
+        return;
+    }
+
+    uint32_t lm = a->size > b->size ? a->size : b->size;
+    uint32_t l = lm / 2;
+
+    struct bn low1 = { 0 };
+    split_at(a, 0, l, &low1);
+    struct bn high1 = { 0 };
+    split_at(a, l, lm + 1, &high1);
+
+    struct bn low2 = { 0 };
+    split_at(b, 0, l, &low2);
+    struct bn high2 = { 0 };
+    split_at(b, l, lm + 1, &high2);
+
+    struct bn z0 = { 0 };
+    karatsuba(&low1, &low2, &z0);
+
+    struct bn z1 = { 0 };
+    struct bn tmp1 = { 0 };
+    struct bn tmp2 = { 0 };
+    bignum_add(&low1, &high1, &tmp1);
+    bignum_add(&low2, &high2, &tmp2);
+    karatsuba(&tmp1, &tmp2, &z1);
+
+    struct bn z2 = { 0 };
+    karatsuba(&high1, &high2, &z2);
 
 
+    bignum_sub(&z1, &z2, &tmp1);
+    bignum_sub(&tmp1, &z0, &tmp2);
 
+    uint32_t nbits = l * WORD_SIZE;
+    uint32_t nwords = nbits / WORD_SIZE;
+    if (nwords != 0)
+    {
+        _lshift_word(&tmp2, nwords);
+        nbits %= WORD_SIZE;
+    }
+
+    for (uint32_t i = 0; i < nbits; ++i)
+    {
+        _lshift_one_bit(&tmp2);
+    }
+
+    nbits = l * 2 * WORD_SIZE;
+    nwords = nbits / WORD_SIZE;
+    if (nwords != 0)
+    {
+        _lshift_word(&z2, nwords);
+        nbits %= WORD_SIZE;
+    }
+
+    for (uint32_t i = 0; i < nbits; ++i)
+    {
+        _lshift_one_bit(&z2);
+    }
+    bignum_add(&z2, &tmp2, &tmp1);
+    bignum_add(&tmp1, &z0, c);
+}
+
+void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
+{
+    require(a, "a is null");
+    require(b, "b is null");
+    require(c, "c is null");
+
+    struct bn row = { 0 };
+    struct bn tmp = { 0 };
+    struct bn res = { 0 };
+
+    bignum_init(c);
+
+    if (unlikely(bignum_is_zero(a) || bignum_is_zero(b)))
+        return;
+
+    if (a->size > KARATSUBA_MIN && b->size > KARATSUBA_MIN)
+    {
+        karatsuba(a, b, c);
+        return;
+    }
+
+    for (uint32_t i = 0; i < a->size; ++i)
+    {
+        bignum_init(&row);
+
+        for (uint32_t j = 0; j < b->size && i + j < BN_ARRAY_SIZE; ++j)
+        {
+            uint32_t intermediate = BIGNUM_TAIL(a, i) * BIGNUM_TAIL(b, j);
+            bignum_from_int(&tmp, intermediate);
+            _lshift_word(&tmp, i + j);
+            bignum_add(&tmp, &row, &res);
+            _bignum_assign(&row, &res);
+        }
+        bignum_add(c, &row, &res);
+        _bignum_assign(c, &res);
+    }
+    c->neg = a->neg ^ b->neg;
+}
+
+
+/*
 void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
 {
     require(a, "a is null");
@@ -413,19 +547,18 @@ void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
 
         for (uint32_t j = 0; j < b->size && i + j < BN_ARRAY_SIZE; ++j)
         {
-            uint32_t intermediate = BIGNUM_TAIL(a, i)
-                * BIGNUM_TAIL(b, j);
+            uint32_t intermediate = BIGNUM_TAIL(a, i) * BIGNUM_TAIL(b, j);
             bignum_from_int(&tmp, intermediate);
             _lshift_word(&tmp, i + j);
             bignum_add(&tmp, &row, &res);
-            bignum_assign(&row, &res);
+            _bignum_assign(&row, &res);
         }
         bignum_add(c, &row, &res);
-        bignum_assign(c, &res);
+        _bignum_assign(c, &res);
     }
     c->neg = a->neg ^ b->neg;
 }
-
+*/
 
 uint32_t bignum_nb_bits(struct bn* n)
 {
@@ -458,7 +591,7 @@ static void _bignum_div(struct bn* a, struct bn* b, struct bn* q, struct bn* r)
         if (_ubignum_cmp(r, b) >= EQUAL)
         {
             bignum_sub(r, b, &tmp);
-            bignum_assign(r, &tmp);
+            _bignum_assign(r, &tmp);
             BIGNUM_TAIL(q, (i / WORD_SIZE)) |= 1 << (i % WORD_SIZE);
         }
     }
@@ -484,7 +617,7 @@ void bignum_lshift(struct bn* a, struct bn* b, uint32_t nbits)
     require(a, "a is null");
     require(b, "b is null");
 
-    bignum_assign(b, a);
+    _bignum_assign(b, a);
     /* Handle shift in multiples of word-size */
     int nwords = nbits / WORD_SIZE;
     if (nwords != 0)
@@ -505,7 +638,7 @@ void bignum_rshift(struct bn* a, struct bn* b, uint32_t nbits)
     require(a, "a is null");
     require(b, "b is null");
 
-    bignum_assign(b, a);
+    _bignum_assign(b, a);
     /* Handle shift in multiples of word-size */
     int nwords = nbits / WORD_SIZE;
     if (nwords != 0)
@@ -537,7 +670,7 @@ void bignum_mod(struct bn* a, struct bn* b, struct bn* c)
         while (a->neg)
         {
             bignum_add(a, b, c);
-            bignum_assign(a, c);
+            _bignum_assign(a, c);
         }
         return;
     }
@@ -632,8 +765,8 @@ void bignum_powmod(struct bn* a, struct bn* b, struct bn* n, struct bn* res)
     struct bn tmpa;
     struct bn tmpb;
     struct bn tmp;
-    bignum_assign(&tmpa, a);
-    bignum_assign(&tmpb, b);
+    _bignum_assign(&tmpa, a);
+    _bignum_assign(&tmpb, b);
 
     while (1)
     {
@@ -643,7 +776,7 @@ void bignum_powmod(struct bn* a, struct bn* b, struct bn* n, struct bn* res)
             bignum_mod(&tmp, n, res);
         }
         bignum_rshift(&tmpb, &tmp, 1); /* b /= 2 */
-        bignum_assign(&tmpb, &tmp);
+        _bignum_assign(&tmpb, &tmp);
 
         if (bignum_is_zero(&tmpb))
             break;
@@ -671,10 +804,10 @@ void bignum_pow(struct bn* a, struct bn* b, struct bn* c)
     else
     {
         struct bn bcopy;
-        bignum_assign(&bcopy, b);
+        _bignum_assign(&bcopy, b);
 
         /* Copy a -> tmp */
-        bignum_assign(&tmp, a);
+        _bignum_assign(&tmp, a);
 
         bignum_dec(&bcopy);
 
@@ -687,11 +820,11 @@ void bignum_pow(struct bn* a, struct bn* b, struct bn* c)
             /* Decrement b by one */
             bignum_dec(&bcopy);
 
-            bignum_assign(&tmp, c);
+            _bignum_assign(&tmp, c);
         }
 
         /* c = tmp */
-        bignum_assign(c, &tmp);
+        _bignum_assign(c, &tmp);
     }
 }
 //
@@ -727,6 +860,18 @@ void bignum_pow(struct bn* a, struct bn* b, struct bn* c)
 //    bignum_assign(b,&low);
 //}
 
+static void _bignum_assign(struct bn* dst, struct bn* src)
+{
+    dst->neg = src->neg;
+    dst->size = src->size;
+
+    uint32_t *array_dst = (void *)dst->array;
+    uint32_t *array_src = (void *)src->array;
+    for (int i = 0; i < BN_ARRAY_SIZE / 4; ++i)
+    {
+        array_dst[i] = array_src[i];
+    }
+}
 
 void bignum_assign(struct bn* dst, struct bn* src)
 {
