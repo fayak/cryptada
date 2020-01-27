@@ -11,4 +11,5 @@ subtype Mutual_Exclusion is Binary_Semaphore
     (Initially_Available => True,
      Ceiling             => Default_Ceiling);      
    col : Integer;
+   row : Integer;
 end display;

@@ -30,7 +30,7 @@ package body prime is
                goto Redo_Tests;
             end if;
          end loop;
-         
+
          if not fermat.Pseudo_Prime(n, Two)   or else
             not fermat.Pseudo_Prime(n, Three) or else
             not fermat.Pseudo_Prime(n, Five)  or else
@@ -59,6 +59,7 @@ package body prime is
          
          exit when Is_Prime;
       end loop;
+      Free_Bignum(Tmp);
    end Give_Prime_Number;
    
    begin

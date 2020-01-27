@@ -55,10 +55,12 @@ with Rsa;
 with entropy_generator_gyro;
 with usart;
 with Ada.Exceptions; use Ada.Exceptions;
+with Ada.Real_Time; use Ada.Real_Time;
 
 
 procedure Main
 is
+      --pragma Priority (0);
 
 
    Big_Num_A, Big_Num_B, A, B, C, n, d ,e : Big_Num_Access := new bn;
@@ -68,6 +70,8 @@ is
    Board_Size : Point := (240, 320);
 
    Nb_Bit : Integer := 32;
+
+   Epoch : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
 
    String_Base : String(1..STR_DEST_SIZE) := (others => '0');
    Buffer : Interfaces.C.Strings.chars_ptr;
@@ -96,8 +100,10 @@ begin
    LCD_Std_Out.Clear_Screen;
 
    usart.Init_USART;
+   usart.Send_Message("timestamp=" & Duration'Image (Ada.Real_Time.To_Duration(Ada.Real_Time.Clock - Epoch)));
+   rsa.Gen_RSA(512 + 256, n, d, e);
+   usart.Send_Message("timestamp=" & Duration'Image (Ada.Real_Time.To_Duration(Ada.Real_Time.Clock - Epoch)));
 
-   rsa.Gen_RSA(512, n, d, e);
 
    loop
       delay 1.0;

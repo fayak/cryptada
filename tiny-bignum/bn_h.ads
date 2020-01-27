@@ -12,20 +12,22 @@ package bn_h is
    --    __builtin_expect(notnot(x), 1)
    --  arg-macro: procedure unlikely (x)
    --    __builtin_expect(notnot(x), 0)
-   BN_ARRAY_SIZE : constant := 256;  --  bn.h:30
-   STR_DEST_SIZE : constant := 256;  --  bn.h:31
+   BN_ARRAY_SIZE : constant := 128;  --  bn.h:34
+   STR_DEST_SIZE : constant := 256;  --  bn.h:35
    --  unsupported macro: require(p,msg) assert(p && #msg)
 
-   BASE : constant := 256;  --  bn.h:35
-   WORD_SIZE : constant := 8;  --  bn.h:36
-   WORD_MASK : constant := 16#ff#;  --  bn.h:37
+   BASE : constant := 256;  --  bn.h:39
+   WORD_SIZE : constant := 8;  --  bn.h:40
+   WORD_MASK : constant := 16#ff#;  --  bn.h:41
 
-   POOL_SIZE : constant := 64;  --  bn.h:91
+   KARATSUBA_MIN : constant := 6;  --  bn.h:44
 
-   ENTROPY_SHIFT : constant := 3;  --  bn.h:125
+   POOL_SIZE : constant := 64;  --  bn.h:99
+
+   ENTROPY_SHIFT : constant := 3;  --  bn.h:133
    --  unsupported macro: MAX_ENTROPY (POOL_SIZE << (5 + ENTROPY_SHIFT))
 
-   POOL_BIT_SHIFT : constant := (6 + 5);  --  bn.h:131
+   POOL_BIT_SHIFT : constant := (6 + 5);  --  bn.h:139
    --  arg-macro: function ENTROPY_COUNT (x)
    --    return (x) >> ENTROPY_SHIFT;
 
@@ -41,29 +43,31 @@ package bn_h is
   --There may well be room for performance-optimizations and improvements.
   -- 
 
+  -- MUST BE % 4 !
   -- Custom assert macro - easy to disable  
+  --static uint8_t KARATSUBA_MIN = 6;
   -- Data-holding structure: array of DTYPEs  
-   type anon887_c_array_array is array (0 .. 255) of aliased bits_stdint_uintn_h.uint8_t;
+   type anon887_c_array_array is array (0 .. 127) of aliased bits_stdint_uintn_h.uint8_t;
    type bn is record
-      c_array : aliased anon887_c_array_array;  -- bn.h:42
-      size : aliased bits_stdint_uintn_h.uint32_t;  -- bn.h:43
-      neg : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:44
+      c_array : aliased anon887_c_array_array;  -- bn.h:49
+      size : aliased bits_stdint_uintn_h.uint32_t;  -- bn.h:50
+      neg : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:51
    end record
-   with Convention => C_Pass_By_Copy;  -- bn.h:40
+   with Convention => C_Pass_By_Copy;  -- bn.h:47
 
   -- Tokens returned by bignum_cmp() for value comparison  
   -- Initialization functions:  
-   procedure bignum_init (n : access bn)  -- bn.h:51
+   procedure bignum_init (n : access bn)  -- bn.h:58
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_init";
 
-   procedure bignum_from_int (n : access bn; i : bits_stdint_intn_h.int32_t)  -- bn.h:52
+   procedure bignum_from_int (n : access bn; i : bits_stdint_intn_h.int32_t)  -- bn.h:59
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_from_int";
 
-   function bignum_to_int (n : access bn) return int  -- bn.h:53
+   function bignum_to_int (n : access bn) return int  -- bn.h:60
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_to_int";
@@ -71,7 +75,7 @@ package bn_h is
    procedure bignum_from_string
      (n : access bn;
       str : Interfaces.C.Strings.chars_ptr;
-      nbytes : bits_stdint_uintn_h.uint32_t)  -- bn.h:54
+      nbytes : bits_stdint_uintn_h.uint32_t)  -- bn.h:61
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_from_string";
@@ -79,7 +83,7 @@ package bn_h is
    procedure bignum_to_string
      (n : access bn;
       str : Interfaces.C.Strings.chars_ptr;
-      maxsize : bits_stdint_uintn_h.uint32_t)  -- bn.h:55
+      maxsize : bits_stdint_uintn_h.uint32_t)  -- bn.h:62
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_to_string";
@@ -89,7 +93,7 @@ package bn_h is
    procedure bignum_add
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:58
+      c : access bn)  -- bn.h:65
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_add";
@@ -98,7 +102,7 @@ package bn_h is
    procedure bignum_sub
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:59
+      c : access bn)  -- bn.h:66
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_sub";
@@ -107,7 +111,7 @@ package bn_h is
    procedure bignum_mul
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:60
+      c : access bn)  -- bn.h:67
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_mul";
@@ -116,7 +120,7 @@ package bn_h is
    procedure bignum_div
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:61
+      c : access bn)  -- bn.h:68
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_div";
@@ -125,7 +129,7 @@ package bn_h is
    procedure bignum_mod
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:62
+      c : access bn)  -- bn.h:69
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_mod";
@@ -135,7 +139,7 @@ package bn_h is
      (a : access bn;
       b : access bn;
       n : access bn;
-      res : access bn)  -- bn.h:64
+      res : access bn)  -- bn.h:71
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_powmod";
@@ -145,7 +149,7 @@ package bn_h is
    procedure bignum_and
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:67
+      c : access bn)  -- bn.h:74
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_and";
@@ -154,7 +158,7 @@ package bn_h is
    procedure bignum_or
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:68
+      c : access bn)  -- bn.h:75
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_or";
@@ -163,7 +167,7 @@ package bn_h is
    procedure bignum_xor
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:69
+      c : access bn)  -- bn.h:76
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_xor";
@@ -172,7 +176,7 @@ package bn_h is
    procedure bignum_lshift
      (a : access bn;
       b : access bn;
-      nbits : bits_stdint_uintn_h.uint32_t)  -- bn.h:70
+      nbits : bits_stdint_uintn_h.uint32_t)  -- bn.h:77
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_lshift";
@@ -181,32 +185,32 @@ package bn_h is
    procedure bignum_rshift
      (a : access bn;
       b : access bn;
-      nbits : bits_stdint_uintn_h.uint32_t)  -- bn.h:71
+      nbits : bits_stdint_uintn_h.uint32_t)  -- bn.h:78
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_rshift";
 
   --    /* Special operators and comparison  
   -- Compare: returns LARGER, EQUAL or SMALLER  
-   function bignum_cmp (a : access bn; b : access bn) return int  -- bn.h:74
+   function bignum_cmp (a : access bn; b : access bn) return int  -- bn.h:81
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_cmp";
 
   -- For comparison with zero  
-   function bignum_is_zero (n : access bn) return int  -- bn.h:75
+   function bignum_is_zero (n : access bn) return int  -- bn.h:82
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_is_zero";
 
   -- Increment: add one to n  
-   procedure bignum_inc (n : access bn)  -- bn.h:76
+   procedure bignum_inc (n : access bn)  -- bn.h:83
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_inc";
 
   -- Decrement: subtract one from n  
-   procedure bignum_dec (n : access bn)  -- bn.h:77
+   procedure bignum_dec (n : access bn)  -- bn.h:84
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_dec";
@@ -215,19 +219,19 @@ package bn_h is
    procedure bignum_pow
      (a : access bn;
       b : access bn;
-      c : access bn)  -- bn.h:78
+      c : access bn)  -- bn.h:85
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_pow";
 
   --    void bignum_isqrt(struct bn* a, struct bn* b);             /* Integer square root -- e.g. isqrt(5) => 2 
   -- Copy src into dst -- dst := src  
-   procedure bignum_assign (dst : access bn; src : access bn)  -- bn.h:80
+   procedure bignum_assign (dst : access bn; src : access bn)  -- bn.h:87
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_assign";
 
-   function bignum_nb_bits (n : access bn) return bits_stdint_uintn_h.uint32_t  -- bn.h:82
+   function bignum_nb_bits (n : access bn) return bits_stdint_uintn_h.uint32_t  -- bn.h:90
    with Import => True, 
         Convention => C, 
         External_Name => "bignum_nb_bits";
@@ -237,7 +241,7 @@ package bn_h is
   -- *  Based on linux random.c
   -- *  
 
-   function rol32 (n : bits_stdint_uintn_h.uint32_t; nb : unsigned) return bits_stdint_uintn_h.uint32_t  -- bn.h:94
+   function rol32 (n : bits_stdint_uintn_h.uint32_t; nb : unsigned) return bits_stdint_uintn_h.uint32_t  -- bn.h:102
    with Import => True, 
         Convention => C, 
         External_Name => "rol32";
@@ -246,17 +250,17 @@ package bn_h is
    type anon908_chacha20_state_array is array (0 .. 15) of aliased bits_stdint_uintn_h.uint32_t;
    type anon908_output_array is array (0 .. 1) of aliased bits_stdint_uintn_h.uint32_t;
    type entropy_pool is record
-      pool : aliased anon908_pool_array;  -- bn.h:97
-      entropy_count : aliased bits_stdint_uintn_h.uint32_t;  -- bn.h:98
-      i : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:101
-      rotate : aliased int;  -- bn.h:102
-      j : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:105
-      chacha20_state : aliased anon908_chacha20_state_array;  -- bn.h:106
-      chacha20_init : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:107
-      output : aliased anon908_output_array;  -- bn.h:108
-      remaining_extracted : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:109
+      pool : aliased anon908_pool_array;  -- bn.h:105
+      entropy_count : aliased bits_stdint_uintn_h.uint32_t;  -- bn.h:106
+      i : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:109
+      rotate : aliased int;  -- bn.h:110
+      j : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:113
+      chacha20_state : aliased anon908_chacha20_state_array;  -- bn.h:114
+      chacha20_init : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:115
+      output : aliased anon908_output_array;  -- bn.h:116
+      remaining_extracted : aliased bits_stdint_uintn_h.uint8_t;  -- bn.h:117
    end record
-   with Convention => C_Pass_By_Copy;  -- bn.h:96
+   with Convention => C_Pass_By_Copy;  -- bn.h:104
 
   -- Entropy mixing
   -- Where to put the created entropy. Init it to 0, and don't touch
@@ -265,12 +269,12 @@ package bn_h is
   -- Where to get the last 16 bytes of entropy to XOR. Init it to 0, and don't touch
   -- Is chacha20_state initialized ?
   -- Contains (remaining_extracted) random bytes to be given to the user
-   twist_table : aliased array (0 .. 7) of aliased bits_stdint_uintn_h.uint32_t  -- bn.h:112
+   twist_table : aliased array (0 .. 7) of aliased bits_stdint_uintn_h.uint32_t  -- bn.h:120
    with Import => True, 
         Convention => C, 
         External_Name => "twist_table";
 
-   taps : aliased array (0 .. 5) of aliased bits_stdint_uintn_h.uint32_t  -- bn.h:116
+   taps : aliased array (0 .. 5) of aliased bits_stdint_uintn_h.uint32_t  -- bn.h:124
    with Import => True, 
         Convention => C, 
         External_Name => "taps";
@@ -278,7 +282,7 @@ package bn_h is
   -- P(X) = X^128 + X^104 + X^76 + X^51 + X^25 + X + 1
   -- Q(X) = alpha^3 (P(X) - 1) + 1 with alpha^3 compute using twist_table
   -- Mix some entropy in the entropy pool
-   procedure mix_pool (entropy : int; pool : access entropy_pool)  -- bn.h:122
+   procedure mix_pool (entropy : int; pool : access entropy_pool)  -- bn.h:130
    with Import => True, 
         Convention => C, 
         External_Name => "mix_pool";
@@ -289,24 +293,24 @@ package bn_h is
   -- log(POOL_SIZE) + 5
   -- Used for faster division by bitshift
   -- = {"EMPTY", "LOW", "MEDIUM", "FILLED", "FULL"};
-   ENTROPY_POOL_COUNT_TXT : array (0 .. 15) of Interfaces.C.Strings.chars_ptr  -- bn.h:134
+   ENTROPY_POOL_COUNT_TXT : array (0 .. 15) of Interfaces.C.Strings.chars_ptr  -- bn.h:142
    with Import => True, 
         Convention => C, 
         External_Name => "ENTROPY_POOL_COUNT_TXT";
 
   -- Credit the entropy pool for a given amount of bits of entropy
-   function credit_entropy (nb_bits : int; pool : access entropy_pool) return int  -- bn.h:136
+   function credit_entropy (nb_bits : int; pool : access entropy_pool) return int  -- bn.h:144
    with Import => True, 
         Convention => C, 
         External_Name => "credit_entropy";
 
-   function entropy_estimator (x : int) return int  -- bn.h:138
+   function entropy_estimator (x : int) return int  -- bn.h:146
    with Import => True, 
         Convention => C, 
         External_Name => "entropy_estimator";
 
   -- Return the amount of bits of entropy in the pool
-   function get_entropy_count (pool : access entropy_pool) return bits_stdint_uintn_h.uint32_t  -- bn.h:141
+   function get_entropy_count (pool : access entropy_pool) return bits_stdint_uintn_h.uint32_t  -- bn.h:149
    with Import => True, 
         Convention => C, 
         External_Name => "get_entropy_count";
@@ -315,7 +319,7 @@ package bn_h is
   -- enough entropy to do so, so be advised.
   -- When it needs to extract entropy from the pool, it requires 64 bits of entropy.
   -- One must assert (pool->remaining_extracted > 0 || pool->entropy_count >= 64) before calling get_random
-   function get_random (pool : access entropy_pool) return bits_stdint_uintn_h.uint8_t  -- bn.h:149
+   function get_random (pool : access entropy_pool) return bits_stdint_uintn_h.uint8_t  -- bn.h:157
    with Import => True, 
         Convention => C, 
         External_Name => "get_random";

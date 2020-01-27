@@ -199,7 +199,7 @@ void bignum_to_string(struct bn* n, char* str, uint32_t nbytes)
         return;
     }
 
-    uint8_t shift = nbytes - i;
+    uint32_t shift = nbytes - i;
     if (shift == 0)
         return;
     for (uint32_t i = 0; i < nbytes - shift; ++i)
@@ -407,6 +407,7 @@ void bignum_inc(struct bn* n)
     remove_zeros(n);
 }
 
+
 void split_at(struct bn* a, uint32_t low, uint32_t top, struct bn* res)
 {
     uint32_t max = top < a->size ? top : a->size;
@@ -416,43 +417,53 @@ void split_at(struct bn* a, uint32_t low, uint32_t top, struct bn* res)
     }
 }
 
+#define MAX_KARATSUBA_DEPTH 1
+static int depth = 0;
+
 void karatsuba(struct bn* a, struct bn* b, struct bn* c)
 {
-    if (a->size < KARATSUBA_MIN || b->size < KARATSUBA_MIN)
-    {
-        bignum_mul(a, b, c);
-        return;
-    }
+
+    depth++;
 
     uint32_t lm = a->size > b->size ? a->size : b->size;
     uint32_t l = lm / 2;
 
-    struct bn low1 = { 0 };
+  struct bn low1;
+  bignum_init(&low1);
     split_at(a, 0, l, &low1);
-    struct bn high1 = { 0 };
+  struct bn high1;
+  bignum_init(&high1);
     split_at(a, l, lm + 1, &high1);
 
-    struct bn low2 = { 0 };
+  struct bn low2;
+  bignum_init(&low2);
     split_at(b, 0, l, &low2);
-    struct bn high2 = { 0 };
+  struct bn high2;
+  bignum_init(&high2);
     split_at(b, l, lm + 1, &high2);
 
-    struct bn z0 = { 0 };
-    karatsuba(&low1, &low2, &z0);
+  struct bn z0;
+  bignum_init(&z0);
+    bignum_mul(&low1, &low2, &z0);
 
-    struct bn z1 = { 0 };
-    struct bn tmp1 = { 0 };
-    struct bn tmp2 = { 0 };
-    bignum_add(&low1, &high1, &tmp1);
+    struct bn z1;
+  struct bn tmp2;
+  bignum_init(&z1);
+  bignum_init(&tmp2);
     bignum_add(&low2, &high2, &tmp2);
-    karatsuba(&tmp1, &tmp2, &z1);
 
-    struct bn z2 = { 0 };
-    karatsuba(&high1, &high2, &z2);
+    struct bn *tmp1 = &low2;
+
+    bignum_add(&low1, &high1, tmp1);
+    bignum_mul(tmp1, &tmp2, &z1);
+
+    struct bn *z2 = &low1; // variable reuse to prevent excessive stack usage
+    bignum_init(z2);
+    bignum_mul(&high1, &high2, z2);
 
 
-    bignum_sub(&z1, &z2, &tmp1);
-    bignum_sub(&tmp1, &z0, &tmp2);
+    bignum_sub(&z1, z2, tmp1);
+    bignum_sub(tmp1, &z0, &tmp2);
 
     uint32_t nbits = l * WORD_SIZE;
     uint32_t nwords = nbits / WORD_SIZE;
@@ -471,39 +482,37 @@ void karatsuba(struct bn* a, struct bn* b, struct bn* c)
     nwords = nbits / WORD_SIZE;
     if (nwords != 0)
     {
-        _lshift_word(&z2, nwords);
+        _lshift_word(z2, nwords);
         nbits %= WORD_SIZE;
     }
 
     for (uint32_t i = 0; i < nbits; ++i)
     {
-        _lshift_one_bit(&z2);
+        _lshift_one_bit(z2);
     }
-    bignum_add(&z2, &tmp2, &tmp1);
-    bignum_add(&tmp1, &z0, c);
+    bignum_add(z2, &tmp2, tmp1);
+    bignum_add(tmp1, &z0, c);
+    depth--;
 }
 
-void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
+void _bignum_mul(struct bn* a, struct bn* b, struct bn* c)
 {
-    require(a, "a is null");
-    require(b, "b is null");
-    require(c, "c is null");
 
-    struct bn row = { 0 };
-    struct bn tmp = { 0 };
-    struct bn res = { 0 };
+
+    struct bn row;
+    struct bn tmp;
+  struct bn res;
+  
+  bignum_init(&row);  bignum_init(&tmp);
+  bignum_init(&res);
+
 
     bignum_init(c);
 
     if (unlikely(bignum_is_zero(a) || bignum_is_zero(b)))
         return;
 
-    if (a->size > KARATSUBA_MIN && b->size > KARATSUBA_MIN)
-    {
-        karatsuba(a, b, c);
-        return;
-    }
-
+    
     for (uint32_t i = 0; i < a->size; ++i)
     {
         bignum_init(&row);
@@ -520,6 +529,22 @@ void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
         _bignum_assign(c, &res);
     }
     c->neg = a->neg ^ b->neg;
+}
+
+void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
+{
+   require(a, "a is null");
+    require(b, "b is null");
+    require(c, "c is null");
+   if (depth < MAX_KARATSUBA_DEPTH && a->size > KARATSUBA_MIN && b->size > KARATSUBA_MIN)
+    {
+        karatsuba(a, b, c);
+    }
+  else
+    {
+      _bignum_mul(a, b, c);
+      }
+
 }
 
 

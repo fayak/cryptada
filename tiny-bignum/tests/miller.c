@@ -40,7 +40,7 @@ int miller_rabin_witness(BN n, BN s, BN a, BN d, BN n_minus)
     return true;
 }
 
-int miller_rabin(BN N, int Nb_Bits, int Nb_Tests)
+int miller_rabin(BN N, int Nb_Bits, int Nb_Tests, BN *witnesses)
 {
     struct bn d;
     BN D = &d;
@@ -72,17 +72,9 @@ int miller_rabin(BN N, int Nb_Bits, int Nb_Tests)
 
       for (int i = 0; i < Nb_Tests; ++i)
       {
-          bignum_init(Witness);
-          for (int j = 0; j < Nb_Bits + Nb_Bits / 2; j += 3)
-          {
-            struct bn prout;
-            bignum_from_int(&prout, rand() % 1000);
-            bignum_add(&prout, Witness, Tmp);
-            bignum_assign(Witness, Tmp);
-          }
+         Witness = witnesses[i];
          bignum_mod(Witness, N_Minus_4, Tmp);
          bignum_add(Tmp, Two, Witness);
-
          if (miller_rabin_witness(N, S, Witness, D, N_Minus))
             return false;
 

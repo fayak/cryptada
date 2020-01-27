@@ -12,6 +12,23 @@
 #define AFTER  printf("Test succeed : %s\n", __func__)
 
 
+void test_debug(void)
+{
+    BEFORE;
+    struct bn a;
+    struct bn b;
+    struct bn c;
+    struct bn e;
+    char pute[512] = {0};
+    bignum_from_string(&a, "22550415808872450777359150248746681104756835766590039822383307367605770693362", 77);
+    bignum_from_string(&b, "22550415808872450777359150248746681104756835766590039822383307367605770693363", 77);
+    bignum_from_string(&e, "2", 1);
+    bignum_powmod(&e, &a, &b, &c);
+    bignum_to_string(&c, pute, 128);
+    assert(strcmp(pute, "20640226039077309899133766687068753506891885793973807022498460301683993722612") == 0);
+    AFTER;
+}
+
 void test_from_string(void)
 {
     BEFORE;
@@ -421,6 +438,7 @@ void test_mul(void)
     AFTER;
 }
 
+
 void test_div(void)
 {
     BEFORE;
@@ -571,6 +589,7 @@ void test_random(void)
 
 int main(void)
 {
+    test_debug();
     test_from_to_int();
     test_from_string();
     test_nb_bits();

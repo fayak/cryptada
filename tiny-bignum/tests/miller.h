@@ -13,4 +13,4 @@ BN One;
 BN Two;
 BN Three;
 
-int miller_rabin(BN N, int Nb_Bits, int Nb_Tests);
+int miller_rabin(BN N, int Nb_Bits, int Nb_Tests, BN *);

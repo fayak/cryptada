@@ -106,6 +106,7 @@ package body entropy_generator_gyro is
    end collect_entropy;
 
    task body Collect_Background_Entropy is
+
    begin
       delay 1.0;
       entropy_generator_gyro.init_entropy_collector;

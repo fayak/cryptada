@@ -31,7 +31,7 @@ There may well be room for performance-optimizations and improvements.
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
 // MUST BE % 4 !
-#define BN_ARRAY_SIZE    256
+#define BN_ARRAY_SIZE    128
 #define STR_DEST_SIZE    256
 /* Custom assert macro - easy to disable */
 #define require(p, msg) assert(p && #msg)
@@ -40,7 +40,8 @@ There may well be room for performance-optimizations and improvements.
 #define WORD_SIZE 8
 #define WORD_MASK 0xff
 
-static uint8_t KARATSUBA_MIN = 6;
+//static uint8_t KARATSUBA_MIN = 6;
+#define KARATSUBA_MIN 8
 
 /* Data-holding structure: array of DTYPEs */
 struct bn

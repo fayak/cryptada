@@ -18,5 +18,5 @@ int main(void)
     int nb = sizeof(buf) - 1;
     bignum_from_string(&n, buf, nb);
 
-    printf("%d - %d\n", miller_rabin(&n, nb, 10), nb);
+ //   printf("%d - %d\n", miller_rabin(&n, nb, 10), nb);
 }

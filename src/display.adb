@@ -18,14 +18,19 @@ package body display is
    procedure Print_No_CRLF(Line : Print_Pos; Txt : String) is
    begin
       Mutex.Seize;
-      LCD_Std_Out.Put(col*12, Print_Pos'Pos(Line) * 14, Txt & " ");
+      LCD_Std_Out.Put(col*11, Print_Pos'Pos(Line) * (14 + row), Txt & " ");
       col := col + 1;
-      if col > 18 then
+      if col > 20 then
          col := 0;
+         row := row + 1;
+         if row > 10 then
+            row := 0;
+         end if;
       end if;
       usart.Send_Message_No_CRLF(Txt);
       Mutex.Release;
    end Print_No_CRLF;
 begin
    col := 0;
+   row := 0;
 end display;
