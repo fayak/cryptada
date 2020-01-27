@@ -9,20 +9,26 @@ with STM32.EXTI; use STM32.EXTI;
 with L3GD20; use L3GD20;
 with Prng;
 
+with State_Machine; use State_Machine;
 with display; use display;
 
 package body entropy_generator_gyro is
+
+   Line_one : Print_Coord;
+   Line_two : Print_Coord;
+   Line_three : Print_Coord;
    procedure init_entropy_collector is
 
       Entropy_Count : Integer;
+
 
       procedure Configure_Gyro;
       --  Configures the on-board gyro chip
 
       procedure Configure_Gyro_Interrupt;
-   --  Configures the gyro's FIFO interrupt (interrupt #2) on the
-   --  required port/pin for the F429 Discovery board. Enables the interrupt.
-   --  See the F429 Disco User Manual, Table 6, pg 19, for the port/pin.
+      --  Configures the gyro's FIFO interrupt (interrupt #2) on the
+      --  required port/pin for the F429 Discovery board. Enables the interrupt.
+      --  See the F429 Disco User Manual, Table 6, pg 19, for the port/pin.
 
       --------------------
       -- Configure_Gyro --
@@ -35,9 +41,9 @@ package body entropy_generator_gyro is
          --  the F4 Discovery does not.
          STM32.Board.Initialize_Gyro_IO;
 
-         Gyro.Reset;
+         STM32.Board.Gyro.Reset;
 
-         Gyro.Configure
+         STM32.Board.Gyro.Configure
            (Power_Mode       => L3GD20_Mode_Active,
             Output_Data_Rate => L3GD20_Output_Data_Rate_760Hz,
             Axes_Enable => L3GD20_Axes_Enable, Bandwidth => L3GD20_Bandwidth_1,
@@ -45,7 +51,7 @@ package body entropy_generator_gyro is
             Endianness       => L3GD20_Little_Endian,
             Full_Scale       => L3GD20_Fullscale_2000);
 
-         Gyro.Enable_Low_Pass_Filter;
+         STM32.Board.Gyro.Enable_Low_Pass_Filter;
       end Configure_Gyro;
 
       ------------------------------
@@ -53,9 +59,9 @@ package body entropy_generator_gyro is
       ------------------------------
 
       procedure Configure_Gyro_Interrupt is
-      --  This is the required port/pin configuration on STM32F429 Disco
-      --  boards for interrupt 2 on the L3GD20 gyro. See the F429 Disco
-      --  User Manual, Table 6, pg 19.
+         --  This is the required port/pin configuration on STM32F429 Disco
+         --  boards for interrupt 2 on the L3GD20 gyro. See the F429 Disco
+         --  User Manual, Table 6, pg 19.
       begin
          Enable_Clock (MEMS_INT2);
          Configure_IO (MEMS_INT2, (Mode => Mode_In, Resistors => Floating));
@@ -68,15 +74,15 @@ package body entropy_generator_gyro is
 
       Configure_Gyro_Interrupt;
 
-      Gyro.Set_FIFO_Mode (L3GD20_Stream_Mode);
-      Print (Axis_Raw_Values, "X/Y/Z", Send_USART => False);
-      Gyro.Get_Raw_Angle_Rates (Last_Axes);
+      STM32.Board.Gyro.Set_FIFO_Mode (L3GD20_Stream_Mode);
+      Internal_State.Screen.Print ((Print_Pos'Pos(display.Axis_Raw_Values), 0), "X/Y/Z", Send_USART => False);
+      STM32.Board.Gyro.Get_Raw_Angle_Rates (Last_Axes);
       Entropy_Count := 0;
       while Entropy_Count < Prng.Max_Pool_Entropy / 16 loop
-         Gyro.Get_Raw_Angle_Rates (Axes);
-         Print(Axis_Raw_Values, Axes.X'Img & "  ", Send_USART => False, col => 60);
-         Print(Axis_Raw_Values, Axes.Y'Img & "  ", Send_USART => False, col => 120);
-         Print(Axis_Raw_Values, Axes.Z'Img & "  ", Send_USART => False, col => 180);
+         STM32.Board.Gyro.Get_Raw_Angle_Rates (Axes);
+         Internal_State.Screen.Print(Line_one, Axes.X'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Line_two, Axes.Y'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Line_three, Axes.Z'Img & "  ", Send_USART => False);
          Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
@@ -89,10 +95,10 @@ package body entropy_generator_gyro is
    begin
       Entropy_Count := 0;
       while Entropy_Count < Minimum loop
-         Gyro.Get_Raw_Angle_Rates (Axes);
-         Print(Axis_Raw_Values, Axes.X'Img & "  ", Send_USART => False, col => 60);
-         Print(Axis_Raw_Values, Axes.Y'Img & "  ", Send_USART => False, col => 120);
-         Print(Axis_Raw_Values, Axes.Z'Img & "  ", Send_USART => False, col => 180);
+         STM32.Board.Gyro.Get_Raw_Angle_Rates (Axes);
+         Internal_State.Screen.Print(Line_one, Axes.X'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Line_two, Axes.Y'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Line_three, Axes.Z'Img & "  ", Send_USART => False);
          Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
@@ -109,4 +115,9 @@ package body entropy_generator_gyro is
          collect_entropy(2048);
       end loop;
    end Collect_Background_Entropy;
+
+begin
+   Line_one := (Print_Pos'Pos(Axis_Raw_Values), 60);
+   Line_two := (Print_Pos'Pos(Axis_Raw_Values), 120);
+   Line_three  := (Print_Pos'Pos(Axis_Raw_Values), 180);
 end entropy_generator_gyro;

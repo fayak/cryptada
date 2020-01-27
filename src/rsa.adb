@@ -10,6 +10,7 @@ with usart;
 with prime;
 with display;
 use display;
+with State_Machine; use State_Machine;
 
 package body rsa is
 
@@ -149,13 +150,13 @@ package body rsa is
       Buffer : Interfaces.C.Strings.chars_ptr;
    begin
       Buffer := Interfaces.C.Strings.New_String(String_Base);
-      Print(RSA_1, "RSA(" & Nb_Bits'Image & "bits)");
-      Print(RSA_2, "RSA: Finding p");
+      Internal_State.Screen.Print((display.Print_Pos'Pos(RSA_1), 0), "RSA(" & Nb_Bits'Image & "bits)");
+      Internal_State.Screen.Print((display.Print_Pos'Pos(RSA_2), 0), "RSA: Finding p");
       prime.Give_Prime_Number(p, (Nb_Bits / 2) + 1);
-      Print(RSA_3, "RSA: Finding q");
+      Internal_State.Screen.Print((display.Print_Pos'Pos(RSA_3), 0), "RSA: Finding q");
       prime.Give_Prime_Number(q, (Nb_Bits / 2) + 1);
       
-      Print(RSA_4, "RSA: Computing priv.");
+      Internal_State.Screen.Print((display.Print_Pos'Pos(RSA_4), 0), "RSA: Computing priv.");
       bignum_mul(p, q, n);
       -- FIXME : chose either 65537 or 3
       
@@ -163,7 +164,7 @@ package body rsa is
       bignum_sub(p, One, pm1);
       bignum_sub(q, One, pm2);
       bignum_mul(pm1, pm2, pm1_qm1);
-      Print(RSA_4, "RSA: Computing D");
+      Internal_State.Screen.Print((display.Print_Pos'Pos(RSA_4), 0), "RSA: Computing D");
       
       for i in prime.First_Fermat'Range loop
         bignum_assign(e, prime.First_Fermat(i));
@@ -171,9 +172,8 @@ package body rsa is
         exit when d /= null;
       end loop;
 
-      Print(RSA_4, "RSA: Printing things");
+      Internal_State.Screen.Print((display.Print_Pos'Pos(RSA_4), 0), "RSA: Printing things");
       Print_UART_ASN1_Conf(n, d, e, p, q, pm1, pm2);
-      Print(RSA_4, "RSA: done !        ");
+      Internal_State.Screen.Print((display.Print_Pos'Pos(RSA_4), 0), "RSA: done !        ");
    end Gen_RSA;
-
 end rsa;

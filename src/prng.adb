@@ -7,6 +7,7 @@ with LCD_Std_Out; use LCD_Std_Out;
 with Interfaces.C.Strings;
 with bits_stdint_uintn_h;
 with display; use display;
+with State_Machine; use State_Machine;
 
 
 package body prng is
@@ -27,13 +28,13 @@ package body prng is
          Ignore_RT := entropy_pool.credit_entropy(entropy_estimator(Interfaces.C.int(Entropy)));
       end if;
       Actual_Entropy_Count := Integer(entropy_pool.get_entropy_count);
-      Print(Entropy_Counter, "Entropy :=" & Actual_Entropy_Count'Img & "/" & Max_Pool_Entropy'Img, False);
+      Internal_State.Screen.Print((Print_Pos'Pos(Entropy_Counter), 0), "Entropy :=" & Actual_Entropy_Count'Img & "/" & Max_Pool_Entropy'Img, False);
       return Actual_Entropy_Count;
    end Feed;
 
-      function get_entropy return Integer is
-begin
-   return Integer(entropy_pool.get_entropy_count);
+   function get_entropy return Integer is
+   begin
+      return Integer(entropy_pool.get_entropy_count);
    end get_entropy;
 
    procedure Random_Internal(N : in out Big_Num_Access; Nb_Bits : Integer; Min_Entropy : Integer) is
@@ -48,9 +49,9 @@ begin
       while Nb_Bits_Work > 0 loop
          while get_entropy < Min_Entropy and entropy_pool.remaining_extracted = 0 loop
             delay 0.1;
-            Print(Random_Generator_Status, "Wait. for more entr.", False);
+            Internal_State.Screen.Print((Print_Pos'Pos(Random_Generator_Status), 0), "Wait. for more entr.", False);
          end loop;
-         Print(Random_Generator_Status, "Creat. random number", False);
+         Internal_State.Screen.Print((Print_Pos'Pos(Random_Generator_Status), 0), "Creat. random number", False);
          Work_Byte := Integer(entropy_pool.get_random);
          bignum_from_int(Work_BN, Interfaces.C.Int(Work_Byte));
          bignum_lshift(N, Tmp_BN, 8);
@@ -65,7 +66,7 @@ begin
       end loop;
       Buffer := Interfaces.C.Strings.New_String(String_Base);
       bignum_to_string(N, Buffer, STR_DEST_SIZE);
-      Print(Random_Generator_Status, "Done: " & Interfaces.C.Strings.Value(Buffer) & "          ", False);
+      Internal_State.Screen.Print((Print_Pos'Pos(Random_Generator_Status), 0), "Done: " & Interfaces.C.Strings.Value(Buffer) & "          ", False);
    end Random_Internal;
    procedure Random(N : in out Big_Num_Access; Nb_Bits : Integer) is
    begin

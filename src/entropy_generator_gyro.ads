@@ -8,7 +8,7 @@ package entropy_generator_gyro is
       --pragma Priority (10);
       end Collect_Background_Entropy;
 
-procedure init_entropy_collector;
+   procedure init_entropy_collector;
    procedure collect_entropy(Minimum : Integer);
 
 private
