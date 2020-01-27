@@ -16,24 +16,24 @@ package body prng is
       Ignore_RT : Interfaces.C.int;
    begin
       if Entropy = Last_Integer then
-         return Integer(get_entropy_count(Entropy_Pool_State));
+         return Integer(entropy_pool.get_entropy_count);
       end if;
       Last_Integer := Entropy;
-      mix_pool(Interfaces.C.int(Entropy), Entropy_Pool_State);
+      entropy_pool.mix_pool(Interfaces.C.int(Entropy));
       if Pool_Init < 32 then
          Pool_Init := Pool_Init + 1;
          -- Allow for the PRNG to be filled with initial values before considering increasing the entropy counter
       else
-         Ignore_RT := credit_entropy(entropy_estimator(Interfaces.C.int(Entropy)), Entropy_Pool_State);
+         Ignore_RT := entropy_pool.credit_entropy(entropy_estimator(Interfaces.C.int(Entropy)));
       end if;
-      Actual_Entropy_Count := Integer(get_entropy_count(Entropy_Pool_State));
+      Actual_Entropy_Count := Integer(entropy_pool.get_entropy_count);
       Print(Entropy_Counter, "Entropy :=" & Actual_Entropy_Count'Img & "/" & Max_Pool_Entropy'Img, False);
       return Actual_Entropy_Count;
    end Feed;
 
       function get_entropy return Integer is
 begin
-   return Integer(get_entropy_count(Entropy_Pool_State));
+   return Integer(entropy_pool.get_entropy_count);
    end get_entropy;
 
    procedure Random_Internal(N : in out Big_Num_Access; Nb_Bits : Integer; Min_Entropy : Integer) is
@@ -46,12 +46,12 @@ begin
       bignum_from_int(N, 0);
       Nb_Bits_Work := Nb_Bits;
       while Nb_Bits_Work > 0 loop
-         while get_entropy < Min_Entropy and Entropy_Pool_State.remaining_extracted = 0 loop
+         while get_entropy < Min_Entropy and entropy_pool.remaining_extracted = 0 loop
             delay 0.1;
             Print(Random_Generator_Status, "Wait. for more entr.", False);
          end loop;
          Print(Random_Generator_Status, "Creat. random number", False);
-         Work_Byte := Integer(get_random(Entropy_Pool_State));
+         Work_Byte := Integer(entropy_pool.get_random);
          bignum_from_int(Work_BN, Interfaces.C.Int(Work_Byte));
          bignum_lshift(N, Tmp_BN, 8);
          bignum_add(Work_BN, Tmp_BN, N);
@@ -76,10 +76,5 @@ begin
       Random_Internal(N, Nb_Bits, -1);
    end Random_Unsafe;
 begin
-   Entropy_Pool_State := new bn_h.entropy_pool;
-   Entropy_Pool_State.i := 0;
-   Entropy_Pool_State.j := 0;
-   Entropy_Pool_State.rotate := 0;
-   Entropy_Pool_State.entropy_count := 0;
-   Entropy_Pool_State.remaining_extracted := 0;
+   entropy_pool.init;
 end prng;
