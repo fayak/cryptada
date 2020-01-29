@@ -12,7 +12,9 @@ with State_Machine; use State_Machine;
 
 package body prng is
 
-   function Feed (Entropy : Integer) return Integer is
+   function Feed (Entropy : Integer) return Integer
+
+   is
       Actual_Entropy_Count : Integer;
       Ignore_RT : Interfaces.C.int;
    begin

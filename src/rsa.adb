@@ -44,12 +44,8 @@ package body rsa is
       v1, v2, v3 : Big_Num_Access := null;
       tmp2, q : Big_Num_Access := null;
       res : Big_Num_Access := null;
-      
-      Buffer : Interfaces.C.Strings.chars_ptr;
-      String_Base : String(1..STR_DEST_SIZE) := (others => '0');
-   begin
-      Buffer := Interfaces.C.Strings.New_String(String_Base);
-      
+
+   begin      
       GCD(a, m, tmp1);
       if bignum_cmp(tmp1, One) /= 0 then
          Free_Bignum(tmp1);
