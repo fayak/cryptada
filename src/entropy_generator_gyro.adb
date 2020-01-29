@@ -14,9 +14,9 @@ with display; use display;
 
 package body entropy_generator_gyro is
 
-   Line_one : Print_Coord;
-   Line_two : Print_Coord;
-   Line_three : Print_Coord;
+   X_Pos : Print_Coord;
+   Y_Pos : Print_Coord;
+   Z_Pos : Print_Coord;
    procedure init_entropy_collector is
 
       Entropy_Count : Integer;
@@ -75,14 +75,14 @@ package body entropy_generator_gyro is
       Configure_Gyro_Interrupt;
 
       STM32.Board.Gyro.Set_FIFO_Mode (L3GD20_Stream_Mode);
-      Internal_State.Screen.Print ((Print_Pos'Pos(display.Axis_Raw_Values), 0), "X/Y/Z", Send_USART => False);
+      Internal_State.Screen.Print ((Componant_Line(display.Gyro), 0), "X/Y/Z", Send_USART => False);
       STM32.Board.Gyro.Get_Raw_Angle_Rates (Last_Axes);
       Entropy_Count := 0;
       while Entropy_Count < Prng.Max_Pool_Entropy / 16 loop
          STM32.Board.Gyro.Get_Raw_Angle_Rates (Axes);
-         Internal_State.Screen.Print(Line_one, Axes.X'Img & "  ", Send_USART => False);
-         Internal_State.Screen.Print(Line_two, Axes.Y'Img & "  ", Send_USART => False);
-         Internal_State.Screen.Print(Line_three, Axes.Z'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(X_Pos, Axes.X'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Y_Pos, Axes.Y'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Z_Pos, Axes.Z'Img & "  ", Send_USART => False);
          Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
@@ -96,9 +96,9 @@ package body entropy_generator_gyro is
       Entropy_Count := 0;
       while Entropy_Count < Minimum loop
          STM32.Board.Gyro.Get_Raw_Angle_Rates (Axes);
-         Internal_State.Screen.Print(Line_one, Axes.X'Img & "  ", Send_USART => False);
-         Internal_State.Screen.Print(Line_two, Axes.Y'Img & "  ", Send_USART => False);
-         Internal_State.Screen.Print(Line_three, Axes.Z'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(X_Pos, Axes.X'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Y_Pos, Axes.Y'Img & "  ", Send_USART => False);
+         Internal_State.Screen.Print(Z_Pos, Axes.Z'Img & "  ", Send_USART => False);
          Entropy_Count := Prng.Feed (Integer (Last_Axes.X - Axes.X));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Y - Axes.Y));
          Entropy_Count := Prng.Feed (Integer (Last_Axes.Z - Axes.Z));
@@ -117,7 +117,7 @@ package body entropy_generator_gyro is
    end Collect_Background_Entropy;
 
 begin
-   Line_one := (Print_Pos'Pos(Axis_Raw_Values), 60);
-   Line_two := (Print_Pos'Pos(Axis_Raw_Values), 120);
-   Line_three  := (Print_Pos'Pos(Axis_Raw_Values), 180);
+   X_Pos := (Componant_Line(display.Gyro), 60);
+   Y_Pos := (Componant_Line(display.Gyro), 120);
+   Z_Pos  := (Componant_Line(display.Gyro), 180);
 end entropy_generator_gyro;

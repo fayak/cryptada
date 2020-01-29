@@ -25,7 +25,7 @@ package display is
       Component : Componant;
    end record;
 
-   type Print_Pos is (Axis_Raw_Values, Entropy_Counter, Blank_1, Random_Generator_Status, Blank_2, RSA_1, RSA_2, RSA_3, RSA_4, Blank_3, Prime_Status);
+   -- type Print_Pos is (Axis_Raw_Values, Entropy_Counter, Blank_1, Random_Generator_Status, Blank_2, RSA_1, RSA_2, RSA_3, RSA_4, Blank_3, Prime_Status);
 
    subtype Mutual_Exclusion is Binary_Semaphore
      (Initially_Available => True,
