@@ -139,13 +139,14 @@ package body rsa is
       usart.Send_Message("coeff=INTEGER:" & Interfaces.C.Strings.Value(Buffer)); 
    
    end Print_UART_ASN1_Conf;
-   procedure Gen_RSA(Nb_Bits : in Integer; n, d , e : in out Big_Num_Access) is
-      p, q, pm1, pm2, pm1_qm1 : Big_Num_Access := new bn;
+   procedure Gen_RSA(Nb_Bits : in Integer; n, d , e, p, q, pm1, qm1 : in out Big_Num_Access) is
+      pm1_qm1 : Big_Num_Access := new bn;
       Tmp : Big_Num_Access := new bn;
       String_Base : String(1..STR_DEST_SIZE) := (others => '0');
       Buffer : Interfaces.C.Strings.chars_ptr;
    begin
       Buffer := Interfaces.C.Strings.New_String(String_Base);
+      Internal_State.Screen.Clear_Menu;
       Internal_State.Screen.Print((Componant_Line(display.RSA), 0), "RSA(" & Nb_Bits'Image & "bits)");
       Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Finding p");
       prime.Give_Prime_Number(p, (Nb_Bits / 2) + 1);
@@ -154,12 +155,10 @@ package body rsa is
       
       Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Computing priv.");
       bignum_mul(p, q, n);
-      -- FIXME : chose either 65537 or 3
       
-      --bignum_from_int(e, 65537);
       bignum_sub(p, One, pm1);
-      bignum_sub(q, One, pm2);
-      bignum_mul(pm1, pm2, pm1_qm1);
+      bignum_sub(q, One, qm1);
+      bignum_mul(pm1, qm1, pm1_qm1);
       Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Computing D");
       
       for i in prime.First_Fermat'Range loop
@@ -168,8 +167,8 @@ package body rsa is
         exit when d /= null;
       end loop;
 
-      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Printing things");
-      Print_UART_ASN1_Conf(n, d, e, p, q, pm1, pm2);
-      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: done !        ");
+      Free_Bignum(pm1_qm1);
+      Free_Bignum(Tmp);
+      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: done !         ");
    end Gen_RSA;
 end rsa;

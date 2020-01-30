@@ -3,8 +3,7 @@ with display; use display;
 package State_Machine is
 
    type State is tagged record
-      state : States;
-      screen : display.Display;
+      Screen : display.Display;
    end record;
    procedure Init (self: in out State);
      

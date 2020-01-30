@@ -24,9 +24,9 @@ package body prime is
          bignum_inc(n);
       end if;
       
-      Internal_State.Screen.Print((Line + Line_Offset, 0), "-: KO - not Prime");
-      Internal_State.Screen.Print((Line + Line_Offset + 1, 0), ".: Prime for Fermat");
-      Internal_State.Screen.Print((Line + Line_Offset + 2, 0), "+: Prime for Miller-Rabin");
+      Internal_State.Screen.Print((Line + Line_Offset, 0), "-: not Prime KO");
+      Internal_State.Screen.Print((Line + Line_Offset + 1, 0), ".: Fermat OK");
+      Internal_State.Screen.Print((Line + Line_Offset + 2, 0), "+: Miller-Rabin OK");
       Internal_State.Screen.Print((Line + Line_Offset + 3, 0), "*: Prime Found");
       
       loop
@@ -62,8 +62,11 @@ package body prime is
             Is_Prime := miller_rabin.Miller_Rabin_no_check(n, Nb_Bits, (if Nb_Bits / 4 > 8 then 8 else Nb_Bits / 4));
             if Is_Prime then
                Internal_State.Screen.Print_No_CRLF(Line, "*");
+               if Internal_State.screen.Col /= 0 then
+                  Internal_State.screen.Row :=  Internal_State.screen.Row + 1;
+                  Internal_State.screen.Col := 0;
+               end if;
                Internal_State.screen.Row :=  Internal_State.screen.Row + 1;
-               Internal_State.screen.Col := 0;
             else
                bignum_inc(n); bignum_inc(n);
                Internal_State.Screen.Print_No_CRLF(Line, "-");
@@ -74,7 +77,7 @@ package body prime is
       end loop;
       Free_Bignum(Tmp);
    end Give_Prime_Number;
-   
+
 begin
    Line := display.Componant_Line(display.Prime);
      
