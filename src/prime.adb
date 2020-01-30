@@ -23,8 +23,8 @@ package body prime is
          bignum_inc(n);
       end if;
       
-      Internal_State.Screen.Print((Line + Line_Offset, 0), "-: not Prime KO");
-      Internal_State.Screen.Print((Line + Line_Offset + 1, 0), ".: Fermat OK");
+      Internal_State.Screen.Print((Line + Line_Offset, 0), ".: 1rst Prime OK");
+      Internal_State.Screen.Print((Line + Line_Offset + 1, 0), "-: Fermat OK");
       Internal_State.Screen.Print((Line + Line_Offset + 2, 0), "+: Miller-Rabin OK");
       Internal_State.Screen.Print((Line + Line_Offset + 3, 0), "*: Prime Found");
       
@@ -35,11 +35,12 @@ package body prime is
             bignum_mod(n, First_Primes(i), Tmp);
             if bignum_is_zero(Tmp) = 1 then
                bignum_inc(n); bignum_inc(n);
-               Internal_State.Screen.Print_No_CRLF(Line, "-");
+               
                goto Redo_Tests;
             end if;
          end loop;
-
+         Internal_State.Screen.Print_No_CRLF(Line, ".");
+         
          if not fermat.Pseudo_Prime(n, Two)   or else
             not fermat.Pseudo_Prime(n, Three) or else
             not fermat.Pseudo_Prime(n, Five)  or else
@@ -49,12 +50,11 @@ package body prime is
             goto Redo_Tests;
          end if;
          
-         Internal_State.Screen.Print_No_CRLF(Line, ".");
+         Internal_State.Screen.Print_No_CRLF(Line, "-");
          Is_Prime := miller_rabin.Miller_Rabin_no_check(n, Nb_Bits, 4);
          
          if not Is_Prime then
             bignum_inc(n); bignum_inc(n);
-            Internal_State.Screen.Print_No_CRLF(Line, "-");
          else
             Internal_State.Screen.Print_No_CRLF(Line, "+");
             
