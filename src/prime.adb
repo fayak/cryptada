@@ -1,8 +1,7 @@
-with bn_h;                  use bn_h;
+with bn_h; use bn_h;
 
 with bignum; use bignum;
-with Interfaces.C.Strings;
-use Interfaces.C;
+with Interfaces.C.Strings; use Interfaces.C;
 with Prng;
 with miller_rabin;
 with usart;

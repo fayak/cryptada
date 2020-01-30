@@ -42,7 +42,7 @@ begin
             usart.Send_Message("timestamp=" & Duration'Image (Ada.Real_Time.To_Duration(Ada.Real_Time.Clock - Epoch)));
             rsa.Gen_RSA(Nb_Bit, n, d, e, p, q, pm1, qm1);
             usart.Send_Message("timestamp=" & Duration'Image (Ada.Real_Time.To_Duration(Ada.Real_Time.Clock - Epoch)));
-            Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "RSA Key generated             ");
+            Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "RSA Key generated             ", Send_USART => False);
             RSA_Computed := True;
 
          when Display.BUTTON_SIZE =>
@@ -50,11 +50,11 @@ begin
 
          when Display.BUTTON_PRINT =>
             if RSA_Computed then
-               Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "Printing Key to UART       ");
+               Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "Printing Key to UART       ", Send_USART => False);
                Print_UART_ASN1_Conf(n, d, e, p, q, pm1, qm1);
-               Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "Done!                      ");
+               Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "Done!                      ", Send_USART => False);
             else
-               Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "No RSA Key to Print        ");
+               Internal_State.Screen.Print((Display.Componant_Line(Display.Log_Info), 0), "No RSA Key to Print        ", Send_USART => False);
                delay 0.0;
             end if;
 

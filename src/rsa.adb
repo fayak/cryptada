@@ -148,18 +148,18 @@ package body rsa is
       Buffer := Interfaces.C.Strings.New_String(String_Base);
       Internal_State.Screen.Clear_Menu;
       Internal_State.Screen.Print((Componant_Line(display.RSA), 0), "RSA(" & Nb_Bits'Image & "bits)");
-      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Finding p");
+      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Finding p", Send_USART => False);
       prime.Give_Prime_Number(p, (Nb_Bits / 2) + 1);
-      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Finding q");
+      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Finding q", Send_USART => False);
       prime.Give_Prime_Number(q, (Nb_Bits / 2) + 1);
       
-      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Computing priv.");
+      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Computing priv.", Send_USART => False);
       bignum_mul(p, q, n);
       
       bignum_sub(p, One, pm1);
       bignum_sub(q, One, qm1);
       bignum_mul(pm1, qm1, pm1_qm1);
-      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Computing D");
+      Internal_State.Screen.Print((Componant_Line(display.RSA) + 1, 0), "RSA: Computing D", Send_USART => False);
       
       for i in prime.First_Fermat'Range loop
         bignum_assign(e, prime.First_Fermat(i));
