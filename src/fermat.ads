@@ -6,7 +6,7 @@ with Interfaces.C.Strings;
 
 package fermat is
 
-   function Pseudo_Prime(N, Base : Big_Num_Access) return Boolean;
-     
+    function Pseudo_Prime(N, Base : Big_Num_Access) return Boolean with Pre => (N /= null and Base /= null);
+
 
 end fermat;

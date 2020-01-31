@@ -123,11 +123,11 @@ static void _chacha_iter(uint32_t *x, int n)
 
 void *_memcpy(void *dest, const void *src, uint32_t len)
 {
-  char *d = dest;
-  const char *s = src;
-  while (len--)
-    *d++ = *s++;
-  return dest;
+    char *d = dest;
+    const char *s = src;
+    while (len--)
+        *d++ = *s++;
+    return dest;
 }
 
 void chacha20(uint32_t *state, uint32_t *out)
