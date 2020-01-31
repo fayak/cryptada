@@ -6,9 +6,9 @@ SANITIZE := -fsanitize=address
 CFLAGS := -I. -Wundef -Wall -Wextra -O2
 CFLAGS_TEST := -I. -Wundef -Wall -Wextra -g -O2
 
-all:
+all: bindings
 	@$(CC) $(CFLAGS_TEST) bn.c ./tests/bn_convertion.c  -o ./test_bn
-	@$(CC) $(CFLAGS_TEST) bn.c ./tests/prng.c           -o ./prng
+	@#$(CC) $(CFLAGS_TEST) bn.c ./tests/prng.c           -o ./prng
 	@#$(CC) $(CFLAGS_TEST) bn.c ./tests/miller.c           -o ./miller
 	@#$(CC) $(CFLAGS) bn.c ./tests/golden.c      -o ./test_golden
 	@#$(CC) $(CFLAGS) bn.c ./tests/hand_picked.c -o ./test_hand_picked

@@ -541,7 +541,7 @@ void print_pool(struct entropy_pool *pool)
     printf("\n");
 }
 
-
+/*
 void test_random(void)
 {
     struct entropy_pool pool = {0};
@@ -586,6 +586,7 @@ void test_random(void)
     close(fd);
     close(fd2);
 }
+*/
 
 int main(void)
 {
@@ -604,5 +605,5 @@ int main(void)
     test_div();
     test_bignum_to_string();
     test_pow();
-    test_random();
+    //test_random();
 }
