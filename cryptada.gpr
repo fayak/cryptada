@@ -11,17 +11,16 @@ project Cryptada extends "examples/shared/common/common.gpr" is
    for Target use "arm-eabi";
 
    package Linker is
-      for Default_Switches ("ada") use ("-Wl,--gc-sections", "-Wl,--print-memory-usage", "-g");
-      for Switches ("c") use ("-g", "-fprofile-generate");
+      for Default_Switches ("ada") use ("-Wl,--gc-sections", "-Wl,--print-memory-usage");
    end Linker;
 
    package Builder is
-      for Switches ("ada") use ("-g");
+      for Switches ("ada") use ("-j8");
    end Builder;
 
    package Compiler is
-      for Switches ("ada") use ("-g", "-O2");
-      for Switches ("c") use ("-g", "-O2", "-funroll-loops");
+      for Switches ("ada") use ("-O3", "-gnatn", "-funroll-loops");
+      for Switches ("c") use ("-g", "-funroll-loops", "-O3");
    end Compiler;
 
 end Cryptada;

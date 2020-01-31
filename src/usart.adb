@@ -30,10 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  A demonstration of using the USART device.  Note it requires a program on
---  the host to see the output and interact with the program on the board.
-
---  The file declares the main procedure for the demonstration.
+-- Adapted and modified by DUVAL Cyril and MOUNIER Julien
 
 with STM32;                        use STM32;
 with STM32.GPIO;                   use STM32.GPIO;

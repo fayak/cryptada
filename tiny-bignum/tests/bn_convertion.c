@@ -530,7 +530,7 @@ void test_pow(void)
     assert(bignum_to_int(&c) == 2187);
     AFTER;
 }
-
+/*
 void print_pool(struct entropy_pool *pool)
 {
     printf("Internal pool state : ");
@@ -540,7 +540,7 @@ void print_pool(struct entropy_pool *pool)
     }
     printf("\n");
 }
-
+*/
 /*
 void test_random(void)
 {

@@ -1,6 +1,8 @@
 #ifndef __ENTROPY_POOL_H__
 #define __ENTROPY_POOL_H__
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -15,5 +15,5 @@ private
     Last_Integer : Integer := 0;
     Pool_Init : Integer := 0;
 
-    MIN_SAFE_ENTROPY : Integer := 1;
+    MIN_SAFE_ENTROPY : Integer := 128;
 end Prng;
